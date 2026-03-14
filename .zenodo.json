@@ -1,0 +1,39 @@
+{
+  "title": "Nextflow for reproducible and automated data analysis",
+  "version": "v2025.11",
+  "license": "CC-BY",
+  "upload_type": "lesson",
+  "description": "<p>This hands-on training is designed to help you build scalable, reproducible data analysis pipelines using Nextflow. As data volumes grow and analyses become more complex, mastering workflow management tools is essential for ensuring reproducibility and efficiency. In this course, you’ll learn how to develop and run pipelines on your local machine, HPC clusters, and cloud platforms. Starting from the basics, we’ll guide you through building a simple pipeline and progressively enhance it using Nextflow’s modern DSL2 syntax. By the end, you’ll be equipped with practical skills to streamline your own analyses and collaborate more effectively across computational environments<\/p>",
+  "keywords": [
+    "Nextflow",
+    "Automated data analysis",
+    "Workflow"
+  ],
+  "access_right": "open",
+  "language": "eng",
+  "contributors": [
+    {
+      "name": "VIB",
+      "type": "rightsholder"
+    }
+  ],
+  "creators": [
+    {
+      "name": "Lavaerts, Kobe",
+      "affiliation": "VIB",
+      "orcid": "0000-0003-0490-5969",
+      "type": "trainer"
+    },
+    {
+      "name": ", Nicolas",
+      "affiliation": "VIB",
+      "orcid": "0009-0003-5619-1555",
+      "type": "trainer"
+    }
+  ],
+  "communities": [
+    {
+      "identifier": "vib-training-conferences"
+    }
+  ]
+}
