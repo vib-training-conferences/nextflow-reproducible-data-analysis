@@ -1,0 +1,32 @@
+cff-version: 1.2.0
+message: "If you use this lesson, please cite it as below."
+authors:
+- given-names: Kobe
+  family-names: Lavaerts
+  affiliation: VIB
+  orcid: 0000-0003-0490-5969
+- given-names: Nicolas
+  family-names: Vannieuwkerke
+  affiliation: UZ Ghent
+  orcid: 0009-0003-5619-1555
+contact:
+- given-names: Alexander
+  family-names: Botzki
+  affiliation: VIB
+  orcid: 0000-0001-6691-4233
+title: "Nextflow for reproducible and automated data analysis"
+version: v1.0.0
+doi: ~
+date-released: 2025-08-10
+keywords:
+- Nextflow
+- Data Analysis
+- training material
+license: CC-BY
+repository-code: https://github.com/vib-training-conferences/nextflow-reproducible-data-analysis
+type: lesson
+abstract: "This hands-on training is designed to help you build scalable, reproducible data analysis pipelines using Nextflow. As data volumes grow and analyses become more complex, mastering workflow management tools is essential for ensuring reproducibility and efficiency. In this course, you’ll learn how to develop and run pipelines on your local machine, HPC clusters, and cloud platforms. Starting from the basics, we’ll guide you through building a simple pipeline and progressively enhance it using Nextflow’s modern DSL2 syntax. By the end, you’ll be equipped with practical skills to streamline your own analyses and collaborate more effectively across computational environments."
+identifiers:
+- type: url
+  value: https://github.com/vib-training-conferences/nextflow-reproducible-data-analysis
+  version: v2025.11
