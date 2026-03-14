@@ -15,7 +15,7 @@ contact:
   affiliation: VIB
   orcid: 0000-0001-6691-4233
 title: "Nextflow for reproducible and automated data analysis"
-version: v1.0.0
+version: v0.4.0
 doi: ~
 date-released: 2025-08-10
 keywords:
@@ -29,4 +29,4 @@ abstract: "This hands-on training is designed to help you build scalable, reprod
 identifiers:
 - type: url
   value: https://github.com/vib-training-conferences/nextflow-reproducible-data-analysis
-  version: v2025.11
+  version: v2026.03
