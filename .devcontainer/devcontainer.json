@@ -1,8 +1,7 @@
 {
     "name": "nextflow-reproducible-data-analysis",
     "image": "ghcr.io/nextflow-io/training:latest",
-    "updateRemoteUserUID": true,
-    "remoteUser": "${localEnv:USER}",
+    "remoteUser": "root",
     "remoteEnv": {
         // Nextflow installation version
         "NXF_HOME": "/workspaces/.nextflow",
