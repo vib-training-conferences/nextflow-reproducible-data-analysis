@@ -1,20 +1,31 @@
 {
-    "name": "nfcore",
-    "image": "nfcore/gitpod:latest",
-    "remoteUser": "gitpod",
-    "runArgs": ["--privileged"],
-
-    // Configure tool-specific properties.
+    "name": "nextflow-reproducible-data-analysis",
+    "image": "ghcr.io/nextflow-io/training:latest",
+    "remoteUser": "root",
+    "remoteEnv": {
+        // Nextflow installation version
+        "NXF_HOME": "/workspaces/.nextflow",
+        "NXF_VER": "26.04.1",
+        // Other env vars
+        "SHELL": "/bin/bash" // Use bash
+    },
+    "containerEnv": {
+        // Docker API compatibility
+        "DOCKER_API_VERSION": "1.43"
+    },
+    "onCreateCommand": "bash .devcontainer/setup.sh",
     "customizations": {
-        // Configure properties specific to VS Code.
         "vscode": {
-            // Set *default* container specific settings.json values on container create.
+            "extensions": [
+                "nf-core.nf-core-extensionpack",
+                "ms-vscode.live-server"
+            ],
+            // Use Python from conda
             "settings": {
                 "python.defaultInterpreterPath": "/opt/conda/bin/python"
             },
-
-            // Add the IDs of extensions you want installed when the container is created.
-            "extensions": ["ms-python.python", "ms-python.vscode-pylance", "nf-core.nf-core-extensionpack"]
+            // Use bash
+            "terminal.integrated.defaultProfile.linux": "bash"
         }
     }
 }
