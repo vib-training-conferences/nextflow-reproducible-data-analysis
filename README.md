@@ -453,17 +453,20 @@ Besides these main building blocks, we also already highlight the existence of t
 
 ```groovy
 // create a parameter 'input'
-params.input = '/path/to/input.tsv'
-
+params {
+    input: Path = '/path/to/input.tsv'
+}
 // use the input parameter as an input for the channel
 def input_ch = channel.fromPath(params.input)
 ```
-Here `params.input = '/path/to/input.tsv'` will create a parameter `input` and give it the value `'/path/to/input.tsv'` which is used as an input for the channel. We will later see that these parameters can then be overwritten on runtime.
+Here `input: Path = '/path/to/input.tsv'` inside the params block `params {}` will create a parameter `input` and give it the value `'/path/to/input.tsv'` which is used as an input for the dataflow channel. We will later see that these parameters can then be overwritten on runtime.
 </div>
 
 
-#### 1. Channels
-The input of the analysis is stored in a channel, these are generally files, however the input can be of any kind like numbers, strings, lists, etc. To have a complete overview, we refer to the official documentation\[[4](https://www.nextflow.io/docs/latest/channel.html#)\]. Here are some examples of how a channel can be created using channel factories:
+#### 1. Dataflows
+Workflows consist of dataflow logic, in which processes are connected to each other through dataflow channels and dataflow values.
+
+The input of the analysis is stored in dataflow channels and dataflow values. These are generally files, however the input can be of any kind like numbers, strings, lists, etc. To have a complete overview, we refer to the official documentation\[[4](https://docs.seqera.io/nextflow/workflow#dataflow)\]. Here are some examples of how a channel can be created using channel factories:
 
 ```groovy
 // Channel consisting of strings
@@ -526,7 +529,7 @@ There are 2 distinct types of dataflows: channels and values.
 - Dataflow values consist of a single value (i.e. a string or a number) and can be used within a process any number of times, the value is never consumed. 
 - Dataflow channels consist of one or more elements which will be used once within a process, once an element is used, it cannot be used again within that process. 
 
-  - A channel can be used as input to multiple processes. Each process will receive a copy of the channel and use its elements independently.
+  - A channel or value can be used as input to multiple processes. Each process will receive a copy of the channel and use its elements independently.
   - Channels are designed for connecting the output of one process to the input of other processes.
 
 ```groovy
@@ -548,7 +551,7 @@ In previous versions of Nextflow, channels were often reffered to as queue chann
 
 </div>
 
-More info about values and channels can be found in the [documentation](https://www.nextflow.io/docs/latest/channel.html#channel-types).
+More info about values and channels can be found in the [documentation](https://docs.seqera.io/nextflow/workflow#dataflow).
 
 #### 2. Operators
 Operators are necessary to transform the content of channels in a format that is necessary for usage in the processes. There are a plethora of different operators[[5](https://www.nextflow.io/docs/latest/operator.html?highlight=view#)], however only a handful are used extensively. Here are some examples that you might come accross:
@@ -799,6 +802,8 @@ Salmon is a tool to figure out how much of different RNA pieces (called transcri
 >
 >     input:
 >     tuple val(sample), path(reads)
+>     val slidingwindow
+>     val avgqual
 >
 >     output:
 >     tuple val(sample), path("${sample}*_P.fq"), emit: trim_fq
@@ -806,7 +811,7 @@ Salmon is a tool to figure out how much of different RNA pieces (called transcri
 >
 >     script:
 >     """
->     trimmomatic PE -threads $params.threads ${reads[0]} ${reads[1]} ${sample}1_P.fq ${sample}1_U.fq ${sample}2_P.fq ${sample}2_U.fq $params.slidingwindow $params.avgqual
+>     trimmomatic PE -threads $task.cpus ${reads[0]} ${reads[1]} ${sample}1_P.fq ${sample}1_U.fq ${sample}2_P.fq ${sample}2_U.fq ${slidingwindow} ${avgqual}
 >     """
 > }
 > ```
@@ -921,7 +926,7 @@ process valuesToFile {
 <div class="admonition admonition-info">
 <p class="admonition-title">Note</p>
 
-By default, the output of a process is a dataflow channel, however, when all of the input channels into a process are dataflow values, the output will automaticaly also be a value.
+By default, the output of a process is a dataflow channel, however, when all of the inputs into a process are dataflow values, the output will automaticaly also be a dataflow value.
 
 </div>
 
@@ -1091,9 +1096,9 @@ You should get the following output:
 ****************
 
 #### 4. Workflows
-Defining processes will not produce anything, because you need another part that actually calls the process and connects it to the input channel. Thus, in the `workflow` scope, the processes are called as functions with input arguments being the channels.
+Defining processes will not produce anything, because you need another part that actually calls the process and connects it to the input channel. Thus, in the specialized `workflow` function, the processes are called as functions with input arguments being the channels.
 
-The output that is generated in a process, needs to be emited (`emit`) in order to serve as an input for a next process.
+The output that is generated in a process, needs to be defined in the process output block in order to serve as an input for a next process.
 
 ```groovy
 workflow {
@@ -1103,6 +1108,59 @@ workflow {
 }
 ```
 
+##### Workflow Outputs
+<div class="admonition admonition-info">
+<p class="admonition-title">Note</p>
+
+Workflow outputs are introduced as a stable feature in Nextflow 26.04
+
+</div>
+<div class="admonition admonition-info">
+
+<p class="admonition-title">Note</p>
+
+Workflow outputs are intended to replace the process [publishDir](https://docs.seqera.io/nextflow/reference/process#publishdir) directive. See [Migrating to workflow outputs](https://docs.seqera.io/nextflow/tutorials/workflow-outputs) for guidance on migrating from publishDir to workflow outputs.
+
+
+</div>
+
+The `publish` declaration block inside a workflow function defines the dataflow channels that you want to save as the final results of your workflow. These will often correspond to specific output channels from certain processes.
+
+The `output` block can be used to define how the files, contained in the output channels defined in the `publish` block, are published to an output directory structure.
+
+```groovy
+process fetch {
+    // ...
+
+    output:
+    path 'sample.txt'
+
+    // ...
+}
+
+workflow {
+    main:
+    fetch(params.input)
+    ch_samples = fetch.out
+
+    publish:
+    samples = ch_samples
+}
+
+output {
+    samples {
+        path 'samples_results'
+    }
+}
+```
+
+The files contained in the `ch_samples` channel are published in a folder, defined in the `path` directive of the `output` block, relative to the pipeline output directory.
+
+This pipeline output directory can be specified through the `-output-dir` command line option. By default this is a `results` folder in the path where the workflow is launched from
+
+```
+nextflow run main.nf -output-dir 'my-results'
+```
 
 
 ### Extra exercises
