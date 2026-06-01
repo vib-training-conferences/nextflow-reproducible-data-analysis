@@ -75,7 +75,7 @@ Let's start!
 
 ## General context
 
-This repository contains the materials (exercises) for the workshop on Nextflow on 27-28th November 2025.
+This repository contains the materials (exercises) for the workshop on Nextflow on 4-5 June 2026.
 
 The **presentations** which goes alongside this material can be found [in the Lesson overview: Slides](#2) .
 
@@ -278,7 +278,7 @@ You are free to connect to the cluster however you want, but the above 2 methods
 - Clone this repository into the folder: `git clone https://github.com/vibbits/nextflow-workshop.git`
 - For the Gent cluster usage, in any terminal where you want to run your excercises 
 
-  1. Load the nextflow module: `module load Nextflow/25.04.8`
+  1. Load the nextflow module: `module load Nextflow/26.04.3`
   2. Export the following envrionment variables - these are required so that your home folder is not filled when building and storing apptainer images
    - `export APPTAINER_CACHEDIR=${VSC_SCRATCH}/.apptainer_cache`
    - `export APPTAINER_TMPDIR=${VSC_SCRATCH}/.apptainer_tmp`
