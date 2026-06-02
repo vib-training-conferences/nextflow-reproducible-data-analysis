@@ -1381,16 +1381,58 @@ The results are stored in the results file as described in the two last lines. B
 > `.exitcode`, contains the exitcode of the proccess, this is typically 0 if everything is ok, another value if there was a problem.
 
 
-
-### Pipeline parameters vs Nextflow options
-
-There are two types of parameters!
-
+### Pipeline parameters
 Pipeline parameters are the parameters used in the pipeline script (e.g. `params.reads`). They are related to the pipeline and can be modified/overwritten on the command-line with a **double dash**: e.g parameter `params.reads` in the `fastqc.nf` script can be set as `--reads` in the command-line.
+
+Parameters can be declared with a default value in a pipeline script or in a config file. The following example shows the legacy way to do this.
+
+```groovy
+// dot syntax
+params.reads = 'read.fq'
+
+//block syntax
+params {
+    reads = 'read.fq'
+}
+```
+
+<div class="admonition admonition-info">
+
+<p class="admonition-title">Note</p>
+
+Typed parameters were introduced in Nextflow 26.04 and are intended to replace legacy parameters.
+
+
+</div>
+
+Typed parameters were recently introduced, and the preferred way to declare parameters. We will focus on typed parameters in this course.
+```groovy
+params {
+    reads: Path = 'read.fq'
+}
+```
+When using typed parameters, Nextflow validates all parameters and their types on runtime. If you specify a parameter with the type `Path`, Nextflow validates if the specified value corresponds to an actual existing file, and throws an error if it doesn't.
+
+
+You can overwrite the parameter on runtime as follows:
+```bash
+nextflow run main.nf --reads 'read.fq'
+```
 
 There are more ways to set your pipeline parameters, for example in a `params.json` file. This can be useful when there are many parameters to a pipeline, or if you want to save the parameters for reuse later. More information about this can be found [here](https://www.nextflow.io/docs/latest/config.html).
 
-Nextflow  options are set in the command-line with a **single dash** and are predefined in Nextflow's language. Here are some examples:
+
+<div class="admonition admonition-info">
+
+<p class="admonition-title">Note</p>
+
+Typed parameters are one of the first stable features implemented in the process of introducing proper typing to Nextflow. Typed process and workflows are still in previeuw in the Nextflow 26.04, and not included in this course, but are intended to replace current processes and workflows at some point in the future
+
+</div>
+
+
+### Configuration options
+Configuration options are set on the command-line with a **single dash** and are predefined in Nextflow's language. Here are some examples:
 
 - `-bg` runs the workflow in the background.
 - `-resume` resumes the pipeline from where it failed last time and uses cached information from the `work/` directory.
