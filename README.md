@@ -1514,6 +1514,7 @@ APPTAINER_CACHEDIR=$VSC_SCRATCH/.apptainer_cache NXF_APPTAINER_CACHEDIR=$VSC_SCR
 **Extra exercise 1**
 
 Run the publicly available pipeline `nextflow-io/rnaseq-nf`. Try to modify the name of the folder where results are stored by using a different parameter on the command-line.
+Note that this workflow uses the recently introduced workflow outputs to save output files instead of the publishDir directive
 
 **************
 
@@ -1525,7 +1526,7 @@ Run the publicly available pipeline `nextflow-io/rnaseq-nf`. Try to modify the n
 The directory with the final results:
 
 ```bash
-APPTAINER_CACHEDIR=$VSC_SCRATCH/.apptainer_cache NXF_APPTAINER_CACHEDIR=$VSC_SCRATCH/.apptainer_cache nextflow run nextflow-io/rnaseq-nf --outdir 'myAwesomeResults' -with-apptainer
+APPTAINER_CACHEDIR=$VSC_SCRATCH/.apptainer_cache NXF_APPTAINER_CACHEDIR=$VSC_SCRATCH/.apptainer_cache nextflow run nextflow-io/rnaseq-nf -output-dir 'myAwesomeResults' -with-apptainer
 
 ```
 
@@ -1552,7 +1553,7 @@ Which pipeline parameters are defined, can you modify these in the rnaseq-nf pip
 
 **Solution 2**
 
-The `reads`, `transcriptome`, `outdir` and `multiqc` parameters.
+The `reads`, `transcriptome` and `multiqc` parameters.
 
 ***********
 
@@ -1582,7 +1583,7 @@ The `reads`, `transcriptome`, `outdir` and `multiqc` parameters.
 
 **Solution 3**
 
-1. As of 22/04/2025: 128 pipelines are available, of which 79 are released, 37 are under development, and 12 are archived.
+1. As of 22/04/2025: 150 pipelines are available, of which 91 are released, 46 are under development, and 13 are archived.
 
 2. [link](https://nf-co.re/atacseq)
  - `2.1.2` (15/10/2024)
