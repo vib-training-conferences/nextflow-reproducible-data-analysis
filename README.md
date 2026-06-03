@@ -2360,9 +2360,33 @@ nextflow run main.nf -profile azure,docker
 
 ### Pipeline parameters
 
-It's considered a best practice to provide defaults for all parameters at the top of the `nextflow.config` file and to never change these values in other configuration or workflow files.
+It's considered a best practice to provide defaults for all parameters at the top of the `main.nf` file and to never change these values in other configuration or workflow files.
 
-The parameters can be defined with `params.<name> = <value>` or join them all in one long list as such:
+You should declare parameters in the config file only when other config options use them. When you use a parameter in the script, you should declare it there and override it in config profiles as needed as follows:
+
+```groovy
+// in main.nf
+params {
+    input: Path
+}
+
+```
+```groovy
+// in nextflow.config
+params {
+    publish_mode = 'copy'
+}
+
+workflow.output.mode = params.publish_mode
+
+profiles {
+    test {
+        params.input = "${projectDir}/test/input.txt"
+    }
+}
+```
+
+The parameters can be defined in the config file with `params.<name> = <value>` or join them all in one long list as such:
 
 ``` groovy
 // Define defaults for project parameters needed for running the pipeline
