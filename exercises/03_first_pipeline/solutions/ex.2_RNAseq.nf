@@ -1,19 +1,18 @@
 #!/usr/bin/env nextflow
 
-// General parameters
-params.datadir = "${launchDir}/data"
-params.outdir = "${launchDir}/results"
+params {
+    // General parameters
+    datadir: Path = "${launchDir}/data"
+    outdir: String = "${launchDir}/results"
 
-// Input parameters
-params.samplesheet = "${launchDir}/exercises/03_first_pipeline/samplesheet.csv"
-params.transcriptome = "${params.datadir}/ggal_1_48850000_49020000.Ggal71.500bpflank.fa"
+    // Input parameters
+    samplesheet: Path = "${launchDir}/exercises/03_first_pipeline/samplesheet.csv"
+    transcriptome: Path = "${launchDir}/data/ggal_1_48850000_49020000.Ggal71.500bpflank.fa"
 
-// Trimmomatic
-params.slidingwindow = "SLIDINGWINDOW:4:15"
-params.avgqual = "AVGQUAL:30"
-
-// Salmon
-params.threads = 2
+    // Trimmomatic
+    slidingwindow: String = "SLIDINGWINDOW:4:15"
+    avgqual: String = "AVGQUAL:30"
+}
 
 include { fastqc as fastqc_raw; fastqc as fastqc_trim } from "../../../modules/fastqc" //addParams(OUTPUT: fastqcOutputFolder)
 include { trimmomatic } from "../../../modules/trimmomatic"
@@ -30,8 +29,8 @@ workflow {
     Results-folder   : ${params.outdir}
     ================================
         INPUT & REFERENCES 
-    Input-files      : ${params.reads}
-    Reference genome : ${params.transcriptome}
+    Samplesheet      : ${params.samplesheet}
+    Reference transcriptome : ${params.transcriptome}
     ================================
             TRIMMOMATIC
     Sliding window   : ${params.slidingwindow}
@@ -53,7 +52,7 @@ workflow {
     fastqc_raw(read_pairs_ch) 
         
     // Trimming & QC
-    trimmomatic(read_pairs_ch)
+    trimmomatic(read_pairs_ch, params.slidingwindow, params.avgqual)
     fastqc_trim(trimmomatic.out.trim_fq)
         
     // Mapping salmon

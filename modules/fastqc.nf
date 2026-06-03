@@ -1,5 +1,5 @@
 process fastqc {
-  publishDir "${params.outdir}/quality-control-${sample}/", mode: 'copy', overwrite: true
+  publishDir {"${params.outdir}/quality-control-${sample}/"}, mode: 'copy', overwrite: true
   label 'low'
   container 'quay.io/biocontainers/fastqc:0.11.9--0'
   

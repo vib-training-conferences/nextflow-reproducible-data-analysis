@@ -5,6 +5,7 @@ process star_idx {
     input:
     path genome
     path gtf
+    val genomeSAindexNbases
     
     output:
     path "index_dir/", emit: index
@@ -13,17 +14,17 @@ process star_idx {
     """
     mkdir index_dir
     
-    STAR --runThreadN ${params.threads} \\
+    STAR --runThreadN ${task.cpus} \\
       --runMode genomeGenerate \\
       --genomeDir index_dir/ \\
       --genomeFastaFiles ${genome} \\
-      --genomeSAindexNbases ${params.genomeSAindexNbases} \\
+      --genomeSAindexNbases ${genomeSAindexNbases} \\
       --sjdbGTFfile ${gtf}
     """
 }
 
 process star_alignment {
-    publishDir "${params.outdir}/mapped-reads/", mode: 'copy', overwrite: true  //, pattern: "*.bam"  
+publishDir {"${params.outdir}/mapped-reads/"}, mode: 'copy', overwrite: true  //, pattern: "*.bam"  
     label 'high'
     container "quay.io/biocontainers/star:2.6.1d--0"
 

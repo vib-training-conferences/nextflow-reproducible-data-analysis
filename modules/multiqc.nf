@@ -1,5 +1,5 @@
 process multiqc {
-    publishDir("${params.outdir}/multiqc/", mode: 'copy', overwrite: true)
+    publishDir({"${params.outdir}/multiqc/"}, mode: 'copy', overwrite: true)
     label 'low'
     container 'quay.io/biocontainers/multiqc:1.9--py_1'
 

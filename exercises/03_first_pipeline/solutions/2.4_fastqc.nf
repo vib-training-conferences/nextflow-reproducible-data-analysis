@@ -1,6 +1,8 @@
 #!/usr/bin/env nextflow
 
-params.samplesheet = "${launchDir}/exercises/03_first_pipeline/solutions/samplesheet-wrong-paths.csv"
+params {
+    samplesheet: Path = "${launchDir}/exercises/03_first_pipeline/solutions/samplesheet-wrong-paths.csv"
+}
 
 /**
  * Quality control fastq

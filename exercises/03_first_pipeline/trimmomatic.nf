@@ -1,17 +1,18 @@
 #!/usr/bin/env nextflow
 
 
-// Similar to DSL1, the input data is defined in the beginning.
-params.samplesheet = "${launchDir}/exercises/03_first_pipeline/samplesheet.csv"
-params.outdir = "${launchDir}/results"
-params.threads = 2
-params.slidingwindow = "SLIDINGWINDOW:4:15"
-params.avgqual = "AVGQUAL:30"
+// The input data is defined in the beginning.
+params {
+    samplesheet: Path = "${launchDir}/exercises/03_first_pipeline/samplesheet.csv"
+    outdir: String = "${launchDir}/results"
+    slidingwindow: String = "SLIDINGWINDOW:4:15"
+    avgqual: String = "AVGQUAL:30"
+}
 
 // Definition of a process, notice the absence of the 'from channel'.
 // A process being defined, does not mean it's invoked (see workflow)
 process fastqc {
-    publishDir "${params.outdir}/quality-control-${sample}/", mode: 'copy', overwrite: true
+    publishDir {"${params.outdir}/quality-control-${sample}/"}, mode: 'copy', overwrite: true
     container 'quay.io/biocontainers/fastqc:0.11.9--0'
     
     input:
@@ -25,12 +26,14 @@ process fastqc {
 
 // Process trimmomatic
 process trimmomatic {
-    publishDir "${params.outdir}/trimmed-reads-${sample}", mode: 'copy'
+    publishDir {"${params.outdir}/trimmed-reads-${sample}"}, mode: 'copy'
     container 'quay.io/biocontainers/trimmomatic:0.35--6'
 
     // Same input as fastqc on raw reads, comes from the same channel. 
     input:
-    tuple val(sample), path(reads) 
+    tuple val(sample), path(reads)
+    val slidingwindow
+    val avgqual
 
     output:
     tuple val("${sample}"), path("${sample}*_P.fq"), emit: paired_fq
@@ -38,7 +41,7 @@ process trimmomatic {
 
     script:
     """
-    trimmomatic PE -threads ${params.threads} ${reads[0]} ${reads[1]} ${sample}1_P.fq ${sample}1_U.fq ${sample}2_P.fq ${sample}2_U.fq ${params.slidingwindow} ${params.avgqual} 
+    trimmomatic PE -threads ${task.cpus} ${reads[0]} ${reads[1]} ${sample}1_P.fq ${sample}1_U.fq ${sample}2_P.fq ${sample}2_U.fq ${slidingwindow} ${avgqual} 
     """
 }
 
@@ -48,20 +51,19 @@ workflow {
         LIST OF PARAMETERS
     ================================
                 GENERAL
-    Reads            : ${params.reads}
+    Samplesheet      : ${params.samplesheet}
     Output-folder    : ${params.outdir}
 
             TRIMMOMATIC
-    Threads          : ${params.threads}
     Sliding window   : ${params.slidingwindow}
     Avg quality      : ${params.avgqual}
     """
     // Channels are being created. 
     def read_pairs_ch = channel.fromPath( params.samplesheet, checkIfExists: true )
         .splitCsv(header:true)
-        .map{ row -> tuple( row.sample, [file(row.fastq_1), file(row.fastq_2)] ) }
+        .map{ row -> tuple( row.sample, [file(row.fastq_1, checkIfExists: true), file(row.fastq_2, checkIfExists: true)] ) }
 
 	fastqc(read_pairs_ch) 
-    trimmomatic(read_pairs_ch)
+    trimmomatic(read_pairs_ch, params.slidingwindow, params.avgqual)
     // fastqc(trimmomatic.out.paired_fq) // This will raise an error. Do you remember why?
 }

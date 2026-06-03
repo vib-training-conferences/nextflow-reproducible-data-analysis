@@ -1713,7 +1713,7 @@ Your task:
 
 Modify the workflow so it reads this samplesheet and correctly handles paired-end data. For this you will need to:
 
-- Create a new parameter for the samplesheet to replace the reads parameter (`params.reads`)
+- Create a new parameter for the samplesheet to replace the reads parameter (`params.reads`). Make sure the parameter has the correct type
 - Generate a channel from the samplesheet using the appropriate channel factory
 - Use the [map](https://www.nextflow.io/docs/latest/reference/operator.html#map) operator to transform each item in the channel into a tuple with the following structure: `[sample, [fastq1, fastq2]]`
 - You will need to use a function described in the [namespace documentation](https://www.nextflow.io/docs/latest/reference/stdlib-namespaces.html) to turn the strings with relative paths into actual file objects.
@@ -1868,12 +1868,13 @@ include { trimmomatic } from "../../modules/trimmomatic"
 
 // Running a workflow with the defined processes here.
 workflow {
-  def read_pairs_ch = channel
-    .fromFilePairs(params.reads, checkIfExists:true)
+  def read_pairs_ch = channel.fromPath( params.samplesheet, checkIfExists: true )
+    .splitCsv(header:true)
+    .map{ row -> tuple( row.sample, [file(row.fastq_1, checkIfExists: true), file(row.fastq_2, checkIfExists: true)] ) }
 
   read_pairs_ch.view()
   fastqc_raw(read_pairs_ch)
-  trimmomatic(read_pairs_ch)
+  trimmomatic(read_pairs_ch, params.slidingwindow, params.avgqual)
   fastqc_trim(trimmomatic.out.trim_fq)
 }
 ```
@@ -1888,6 +1889,12 @@ Similarly as described above, we can extend this pipeline and map our trimmed re
 **Exercise 2.6**
 
 In the folder `modules/` find the script `star.nf` which contains two processes: `star_index` and `star_alignment`. Complete the script `RNAseq.nf` so it includes these processes and hence the pipeline is extended with an indexing and alignment step. The parameters used in the modules are already defined for you.
+
+Your task:
+- Include the star module, and import the star processes into the main script
+- Initiate dataflow channes for both `params.genome` and `params.gtf`
+- Execute the `star_idx` process in the entry workflow and provide the correct input channels. Investigating the star.nf module can help in finding the correct input channel structure.
+- Execute the `star_alignment` process in the entry workflow. This process requires both the outputs from the `trimmomatic` and `star_idx` processes as input, as well as the channel containing the gtf file.
 
 <div class="admonition admonition-info">
 <p class="admonition-title">Note</p>
@@ -1915,7 +1922,7 @@ include { star_idx; star_alignment } from "../../modules/star"
 
 workflow {
   ...
-  star_idx(genome, gtf)
+  star_idx(genome, gtf, params.genomeSAindexNbases)
   star_alignment(trimmomatic.out.trim_fq, star_idx.out.index, gtf)
 }
 ```
@@ -1929,7 +1936,14 @@ workflow {
 
 **Exercise 2.7**
 
-In the folder `modules/` find the script `multiqc.nf`. Import the process in the main script so we can use it in the workflow. This process expects all of the zipped and html files from the fastqc processes (raw & trimmed) as one input. Thus it is necessary to use the operators `.mix()` and `.collect()` on the outputs of `fastqc_raw` and `fastqc_trim` to generate one channel with all the files.
+In the folder `modules/` find the script `multiqc.nf`. Import the process in the main script so we can use it in the workflow. This process expects all of the zipped and html files from the fastqc processes (raw & trimmed) as one input. Thus it is necessary to use some operators to transform the output channels from the fastqc processes.
+
+Your tasks:
+- Include the multiqc process into the main script
+- Use the `.mix()` operator to mix the output channels from the `fastqc_raw` and `fastqc_trim` processes, resulting in one channel containing all fastqc output files.
+- Use the `.collect()` operator on this new channel to collect all the separate files into a list containg all the files as a single item
+- Execute the multiqc process, and provide the newly created channel containing all fastq files as the input.
+
 ****************
 
     {{3-4}}
@@ -1960,7 +1974,7 @@ You might have noticed that the star_alignment process was only executed once in
 
 ```groovy
 process star_alignment {
-    publishDir "${params.outdir}/mapped-reads/", mode: 'copy', overwrite: true
+    publishDir {"${params.outdir}/mapped-reads/"}, mode: 'copy', overwrite: true
     label 'high'
     container "quay.io/biocontainers/star:2.6.1d--0"
 
