@@ -3,11 +3,13 @@
 process FASTP {
     // DIRECTIVES: set the docker container, the directory to output to, and a tag to follow along which sample is currently being processed
     container 'quay.io/biocontainers/fastp:1.0.1--heae3180_0'
-    publishDir "${params.outdir}/fastp", mode: 'copy', overwrite: true
+    publishDir {"${params.outdir}/fastp"}, mode: 'copy', overwrite: true
     tag "${sample}"
 
     input:
     tuple val(sample), path(cookies)
+    val fw_primer
+    val rv_primer
 
     output:
     tuple val(sample), path('*_trimmed.fastq')
@@ -22,7 +24,7 @@ process FASTP {
         --cut_tail \
         --length_required 30 \
         --n_base_limit 0 \
-        --adapter_sequence ${params.fw_primer} \
-        --adapter_sequence_r2 ${params.rv_primer}
+        --adapter_sequence ${fw_primer} \
+        --adapter_sequence_r2 ${rv_primer}
     """
 }

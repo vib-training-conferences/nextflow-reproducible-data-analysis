@@ -3,7 +3,7 @@
 process DADA2 {
     // DIRECTIVES: set the docker container, the directory to output to, and the amount of cpus to allocate to this process
     container 'blekhmanlab/dada2:1.26.0'
-    publishDir "${params.outdir}/dada2", mode: 'copy', overwrite: true
+    publishDir {"${params.outdir}/dada2"}, mode: 'copy', overwrite: true
     cpus 4
 
     input:
