@@ -1,11 +1,11 @@
 #!/usr/bin/env nextflow
 
-// The input data is defined in the beginning.
-params.samplesheet = "${launchDir}/exercises/03_first_pipeline/samplesheet.csv"
-params.outdir = "${launchDir}/results"
-params.threads = 2
-params.slidingwindow = "SLIDINGWINDOW:4:15"
-params.avgqual = "AVGQUAL:30"
+params {
+    samplesheet: Path = "${launchDir}/exercises/03_first_pipeline/samplesheet.csv"
+    outdir: String = "${launchDir}/results"
+    slidingwindow: String = "SLIDINGWINDOW:4:15"
+    avgqual: String = "AVGQUAL:30"
+}
 
 include { fastqc as fastqc_raw; fastqc as fastqc_trim } from "../../modules/fastqc" 
 include { trimmomatic } from "../../modules/trimmomatic"
@@ -16,11 +16,10 @@ workflow {
         LIST OF PARAMETERS
     ================================
                 GENERAL
-    Reads            : ${params.reads}
+    Samplesheet      : ${params.samplesheet}
     Output-folder    : ${params.outdir}/
 
             TRIMMOMATIC
-    Threads          : ${params.threads}
     Sliding window   : ${params.slidingwindow}
     Avg quality      : ${params.avgqual}
     """
@@ -28,10 +27,10 @@ workflow {
     // Channels are being created. 
     def read_pairs_ch = channel.fromPath( params.samplesheet, checkIfExists: true )
         .splitCsv(header:true)
-        .map{ row -> tuple( row.sample, [file(row.fastq_1), file(row.fastq_2)] ) }
+        .map{ row -> tuple( row.sample, [file(row.fastq_1, checkIfExists: true), file(row.fastq_2, checkIfExists: true)] ) }
 
     read_pairs_ch.view()
     fastqc_raw(read_pairs_ch) 
-    trimmomatic(read_pairs_ch)
+    trimmomatic(read_pairs_ch, params.slidingwindow, params.avgqual)
     fastqc_trim(trimmomatic.out.trim_fq)
 }

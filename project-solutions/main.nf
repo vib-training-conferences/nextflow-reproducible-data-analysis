@@ -1,13 +1,16 @@
 #!/usr/bin/env nextflow
 
-// set default input parameters (these can be altered by calling their flag on the command line, e.g., nextflow run main.nf --reads 'data2/*_R{1,2}.fastq')
-params.samplesheet = "${launchDir}/samplesheet_project.csv"
-params.outdir = "${launchDir}/output"
-params.fw_primer = "GTGCCAGCAGCCGCGGTAA"
-params.rv_primer = "GGACTACACGGGTTTCTAAT"
 
-//set the path to the script to run in the DADA2 process (you can also make a folder 'bin' and put this script in there so it will automatically be added to nextflow's path)
-params.script1 = "${projectDir}/reads2counts.r"
+params {
+    // set default input parameters (these can be altered by calling their flag on the command line, e.g., nextflow run main.nf --reads 'data2/*_R{1,2}.fastq')
+    samplesheet: Path = "${launchDir}/samplesheet_project.csv"
+    outdir: String = "${launchDir}/output"
+    fw_primer: String = "GTGCCAGCAGCCGCGGTAA"
+    rv_primer: String = "GGACTACACGGGTTTCTAAT"
+    
+    //set the path to the script to run in the DADA2 process (you can also make a folder 'bin' and put this script in there so it will automatically be added to nextflow's path)
+    script1: Path = "${projectDir}/reads2counts.r"
+}
 
 // include processes and subworkflows to make them available for use in this script 
 include { check_QC as check_QC_raw; check_QC as check_QC_trimmed } from "./modules/QC" 
@@ -35,7 +38,7 @@ workflow {
     ==============================================================================================
 
     INPUT PARAMETERS:
-        - reads : ${params.reads}
+        - samplesheet : ${params.samplesheet}
         - output directory : ${params.outdir}
         - forward primer sequence : ${params.fw_primer}
         - reverse primer sequence : ${params.rv_primer}
@@ -46,7 +49,7 @@ workflow {
     // set input data
     def pe_reads_ch = channel.fromPath( params.samplesheet, checkIfExists: true )
         .splitCsv(header:true)
-        .map{ row -> tuple( row.sample, [file(row.fastq_1), file(row.fastq_2)] ) }
+        .map{ row -> tuple( row.sample, [file(row.fastq_1, checkIfExists: true), file(row.fastq_2, checkIfExists: true)] ) }
 
     //pass the 'step' and the raw reads to the QC subworkflow
     check_QC_raw("raw", pe_reads_ch)
@@ -56,7 +59,7 @@ workflow {
     // check_QC_raw(step1, pe_reads_ch)
 
     //pass the raw reads and the primer sequences to the fastp process
-    FASTP(pe_reads_ch)
+    FASTP(pe_reads_ch, params.fw_primer, params.rv_primer)
 
     //pass the 'step' and the trimmed reads to the QC subworkflow
     check_QC_trimmed("trimmed", FASTP.out)

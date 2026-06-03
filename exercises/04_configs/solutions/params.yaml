@@ -1,11 +1,10 @@
 # Add all parameters from the `RNAseq.nf` file here
 datadir: "./data"
 outdir: "results"
-reads: "./data/*{1,2}.fq.gz"
+samplesheet: "./exercises/03_first_pipeline/samplesheet.csv"
 genome: "./data/ggal_1_48850000_49020000.Ggal71.500bpflank.fa"
 gtf: "./data/ggal_1_48850000_49020000.bed.gff"
 slidingwindow: "SLIDINGWINDOW:4:15"
 avgqual: "AVGQUAL:30"
-threads: 2
 genomeSAindexNbases: 10
 lengthreads: 98

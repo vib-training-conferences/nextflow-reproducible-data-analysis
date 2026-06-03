@@ -1,6 +1,8 @@
 #!/usr/bin/env nextflow
 
-params.input_csv = 'exercises/01_building_blocks/input.csv'
+params {
+    input_csv: Path = 'exercises/01_building_blocks/input.csv'
+}
 
 process release_info {
     debug true

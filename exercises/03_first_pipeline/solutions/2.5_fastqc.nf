@@ -1,14 +1,16 @@
 #!/usr/bin/env nextflow
 
-params.samplesheet = "${launchDir}/exercises/03_first_pipeline/samplesheet.csv"
-params.outdir = "${launchDir}/results"
+params {
+    samplesheet: Path = "${launchDir}/exercises/03_first_pipeline/samplesheet.csv"
+    outdir: String = "${launchDir}/results"
+}
 
 /**
  * Quality control fastq
  */
     
 process fastqc {
-    publishDir "${params.outdir}/quality-control-${sample}/", mode: 'copy', overwrite: true
+    publishDir {"${params.outdir}/quality-control-${sample}/"}, mode: 'copy', overwrite: true
     container 'quay.io/biocontainers/fastqc:0.11.9--0'
 
     input:

@@ -3,7 +3,7 @@
 process FASTQC { 
     // DIRECTIVES: set the docker container, the directory to output to, and a tag to follow along which sample is currently being processed
     container 'biocontainers/fastqc:v0.11.9_cv8'
-    publishDir "${params.outdir}/fastqc/${step}", mode: 'copy', overwrite: true
+    publishDir {"${params.outdir}/fastqc/${step}"}, mode: 'copy', overwrite: true
     tag "${sample}"
 
     input:
@@ -23,7 +23,7 @@ process FASTQC {
 process MULTIQC {
     // DIRECTIVES: set the docker container, the directory to output to, and a tag
     container 'ewels/multiqc'
-    publishDir "${params.outdir}/multiqc/${step}/", mode: 'copy', overwrite: true
+    publishDir {"${params.outdir}/multiqc/${step}/"}, mode: 'copy', overwrite: true
     tag "${step}"
 
     input:

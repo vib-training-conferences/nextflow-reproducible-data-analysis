@@ -75,7 +75,7 @@ Let's start!
 
 ## General context
 
-This repository contains the materials (exercises) for the workshop on Nextflow on 27-28th November 2025.
+This repository contains the materials (exercises) for the workshop on Nextflow on 4-5 June 2026.
 
 The **presentations** which goes alongside this material can be found [in the Lesson overview: Slides](#2) .
 
@@ -278,7 +278,7 @@ You are free to connect to the cluster however you want, but the above 2 methods
 - Clone this repository into the folder: `git clone https://github.com/vibbits/nextflow-workshop.git`
 - For the Gent cluster usage, in any terminal where you want to run your excercises 
 
-  1. Load the nextflow module: `module load Nextflow/25.04.8`
+  1. Load the nextflow module: `module load Nextflow/26.04.3`
   2. Export the following envrionment variables - these are required so that your home folder is not filled when building and storing apptainer images
    - `export APPTAINER_CACHEDIR=${VSC_SCRATCH}/.apptainer_cache`
    - `export APPTAINER_TMPDIR=${VSC_SCRATCH}/.apptainer_tmp`
@@ -453,17 +453,20 @@ Besides these main building blocks, we also already highlight the existence of t
 
 ```groovy
 // create a parameter 'input'
-params.input = '/path/to/input.tsv'
-
+params {
+    input: Path = '/path/to/input.tsv'
+}
 // use the input parameter as an input for the channel
 def input_ch = channel.fromPath(params.input)
 ```
-Here `params.input = '/path/to/input.tsv'` will create a parameter `input` and give it the value `'/path/to/input.tsv'` which is used as an input for the channel. We will later see that these parameters can then be overwritten on runtime.
+Here `input: Path = '/path/to/input.tsv'` inside the params block `params {}` will create a parameter `input` and give it the value `'/path/to/input.tsv'` which is used as an input for the dataflow channel. We will later see that these parameters can then be overwritten on runtime.
 </div>
 
 
-#### 1. Channels
-The input of the analysis is stored in a channel, these are generally files, however the input can be of any kind like numbers, strings, lists, etc. To have a complete overview, we refer to the official documentation\[[4](https://www.nextflow.io/docs/latest/channel.html#)\]. Here are some examples of how a channel can be created using channel factories:
+#### 1. Dataflows
+Workflows consist of dataflow logic, in which processes are connected to each other through dataflow channels and dataflow values.
+
+The input of the analysis is stored in dataflow channels and dataflow values. These are generally files, however the input can be of any kind like numbers, strings, lists, etc. To have a complete overview, we refer to the official documentation\[[4](https://docs.seqera.io/nextflow/workflow#dataflow)\]. Here are some examples of how a channel can be created using channel factories:
 
 ```groovy
 // Channel consisting of strings
@@ -526,7 +529,7 @@ There are 2 distinct types of dataflows: channels and values.
 - Dataflow values consist of a single value (i.e. a string or a number) and can be used within a process any number of times, the value is never consumed. 
 - Dataflow channels consist of one or more elements which will be used once within a process, once an element is used, it cannot be used again within that process. 
 
-  - A channel can be used as input to multiple processes. Each process will receive a copy of the channel and use its elements independently.
+  - A channel or value can be used as input to multiple processes. Each process will receive a copy of the channel and use its elements independently.
   - Channels are designed for connecting the output of one process to the input of other processes.
 
 ```groovy
@@ -548,7 +551,7 @@ In previous versions of Nextflow, channels were often reffered to as queue chann
 
 </div>
 
-More info about values and channels can be found in the [documentation](https://www.nextflow.io/docs/latest/channel.html#channel-types).
+More info about values and channels can be found in the [documentation](https://docs.seqera.io/nextflow/workflow#dataflow).
 
 #### 2. Operators
 Operators are necessary to transform the content of channels in a format that is necessary for usage in the processes. There are a plethora of different operators[[5](https://www.nextflow.io/docs/latest/operator.html?highlight=view#)], however only a handful are used extensively. Here are some examples that you might come accross:
@@ -799,6 +802,8 @@ Salmon is a tool to figure out how much of different RNA pieces (called transcri
 >
 >     input:
 >     tuple val(sample), path(reads)
+>     val slidingwindow
+>     val avgqual
 >
 >     output:
 >     tuple val(sample), path("${sample}*_P.fq"), emit: trim_fq
@@ -806,7 +811,7 @@ Salmon is a tool to figure out how much of different RNA pieces (called transcri
 >
 >     script:
 >     """
->     trimmomatic PE -threads $params.threads ${reads[0]} ${reads[1]} ${sample}1_P.fq ${sample}1_U.fq ${sample}2_P.fq ${sample}2_U.fq $params.slidingwindow $params.avgqual
+>     trimmomatic PE -threads $task.cpus ${reads[0]} ${reads[1]} ${sample}1_P.fq ${sample}1_U.fq ${sample}2_P.fq ${sample}2_U.fq ${slidingwindow} ${avgqual}
 >     """
 > }
 > ```
@@ -921,7 +926,7 @@ process valuesToFile {
 <div class="admonition admonition-info">
 <p class="admonition-title">Note</p>
 
-By default, the output of a process is a dataflow channel, however, when all of the input channels into a process are dataflow values, the output will automaticaly also be a value.
+By default, the output of a process is a dataflow channel, however, when all of the inputs into a process are dataflow values, the output will automaticaly also be a dataflow value.
 
 </div>
 
@@ -1091,9 +1096,9 @@ You should get the following output:
 ****************
 
 #### 4. Workflows
-Defining processes will not produce anything, because you need another part that actually calls the process and connects it to the input channel. Thus, in the `workflow` scope, the processes are called as functions with input arguments being the channels.
+Defining processes will not produce anything, because you need another part that actually calls the process and connects it to the input channel. Thus, in the specialized `workflow` function, the processes are called as functions with input arguments being the channels.
 
-The output that is generated in a process, needs to be emited (`emit`) in order to serve as an input for a next process.
+The output that is generated in a process, needs to be defined in the process output block in order to serve as an input for a next process.
 
 ```groovy
 workflow {
@@ -1103,6 +1108,59 @@ workflow {
 }
 ```
 
+##### Workflow Outputs
+<div class="admonition admonition-info">
+<p class="admonition-title">Note</p>
+
+Workflow outputs are introduced as a stable feature in Nextflow 26.04
+
+</div>
+<div class="admonition admonition-info">
+
+<p class="admonition-title">Note</p>
+
+Workflow outputs are intended to replace the process [publishDir](https://docs.seqera.io/nextflow/reference/process#publishdir) directive. See [Migrating to workflow outputs](https://docs.seqera.io/nextflow/tutorials/workflow-outputs) for guidance on migrating from publishDir to workflow outputs.
+
+
+</div>
+
+The `publish` declaration block inside a workflow function defines the dataflow channels that you want to save as the final results of your workflow. These will often correspond to specific output channels from certain processes.
+
+The `output` block can be used to define how the files, contained in the output channels defined in the `publish` block, are published to an output directory structure.
+
+```groovy
+process fetch {
+    // ...
+
+    output:
+    path 'sample.txt'
+
+    // ...
+}
+
+workflow {
+    main:
+    fetch(params.input)
+    ch_samples = fetch.out
+
+    publish:
+    samples = ch_samples
+}
+
+output {
+    samples {
+        path 'samples_results'
+    }
+}
+```
+
+The files contained in the `ch_samples` channel are published in a folder, defined in the `path` directive of the `output` block, relative to the pipeline output directory.
+
+This pipeline output directory can be specified through the `-output-dir` command line option. By default this is a `results` folder in the path where the workflow is launched from
+
+```
+nextflow run main.nf -output-dir 'my-results'
+```
 
 
 ### Extra exercises
@@ -1323,16 +1381,58 @@ The results are stored in the results file as described in the two last lines. B
 > `.exitcode`, contains the exitcode of the proccess, this is typically 0 if everything is ok, another value if there was a problem.
 
 
-
-### Pipeline parameters vs Nextflow options
-
-There are two types of parameters!
-
+### Pipeline parameters
 Pipeline parameters are the parameters used in the pipeline script (e.g. `params.reads`). They are related to the pipeline and can be modified/overwritten on the command-line with a **double dash**: e.g parameter `params.reads` in the `fastqc.nf` script can be set as `--reads` in the command-line.
+
+Parameters can be declared with a default value in a pipeline script or in a config file. The following example shows the legacy way to do this.
+
+```groovy
+// dot syntax
+params.reads = 'read.fq'
+
+//block syntax
+params {
+    reads = 'read.fq'
+}
+```
+
+<div class="admonition admonition-info">
+
+<p class="admonition-title">Note</p>
+
+Typed parameters were introduced in Nextflow 26.04 and are intended to replace legacy parameters.
+
+
+</div>
+
+Typed parameters were recently introduced, and the preferred way to declare parameters. We will focus on typed parameters in this course.
+```groovy
+params {
+    reads: Path = 'read.fq'
+}
+```
+When using typed parameters, Nextflow validates all parameters and their types on runtime. If you specify a parameter with the type `Path`, Nextflow validates if the specified value corresponds to an actual existing file, and throws an error if it doesn't.
+
+
+You can overwrite the parameter on runtime as follows:
+```bash
+nextflow run main.nf --reads 'read.fq'
+```
 
 There are more ways to set your pipeline parameters, for example in a `params.json` file. This can be useful when there are many parameters to a pipeline, or if you want to save the parameters for reuse later. More information about this can be found [here](https://www.nextflow.io/docs/latest/config.html).
 
-Nextflow  options are set in the command-line with a **single dash** and are predefined in Nextflow's language. Here are some examples:
+
+<div class="admonition admonition-info">
+
+<p class="admonition-title">Note</p>
+
+Typed parameters are one of the first stable features implemented in the process of introducing proper typing to Nextflow. Typed process and workflows are still in previeuw in the Nextflow 26.04, and not included in this course, but are intended to replace current processes and workflows at some point in the future
+
+</div>
+
+
+### Configuration options
+Configuration options are set on the command-line with a **single dash** and are predefined in Nextflow's language. Here are some examples:
 
 - `-bg` runs the workflow in the background.
 - `-resume` resumes the pipeline from where it failed last time and uses cached information from the `work/` directory.
@@ -1414,6 +1514,7 @@ APPTAINER_CACHEDIR=$VSC_SCRATCH/.apptainer_cache NXF_APPTAINER_CACHEDIR=$VSC_SCR
 **Extra exercise 1**
 
 Run the publicly available pipeline `nextflow-io/rnaseq-nf`. Try to modify the name of the folder where results are stored by using a different parameter on the command-line.
+Note that this workflow uses the recently introduced workflow outputs to save output files instead of the publishDir directive
 
 **************
 
@@ -1425,7 +1526,7 @@ Run the publicly available pipeline `nextflow-io/rnaseq-nf`. Try to modify the n
 The directory with the final results:
 
 ```bash
-APPTAINER_CACHEDIR=$VSC_SCRATCH/.apptainer_cache NXF_APPTAINER_CACHEDIR=$VSC_SCRATCH/.apptainer_cache nextflow run nextflow-io/rnaseq-nf --outdir 'myAwesomeResults' -with-apptainer
+APPTAINER_CACHEDIR=$VSC_SCRATCH/.apptainer_cache NXF_APPTAINER_CACHEDIR=$VSC_SCRATCH/.apptainer_cache nextflow run nextflow-io/rnaseq-nf -output-dir 'myAwesomeResults' -with-apptainer
 
 ```
 
@@ -1452,7 +1553,7 @@ Which pipeline parameters are defined, can you modify these in the rnaseq-nf pip
 
 **Solution 2**
 
-The `reads`, `transcriptome`, `outdir` and `multiqc` parameters.
+The `reads`, `transcriptome` and `multiqc` parameters.
 
 ***********
 
@@ -1482,7 +1583,7 @@ The `reads`, `transcriptome`, `outdir` and `multiqc` parameters.
 
 **Solution 3**
 
-1. As of 22/04/2025: 128 pipelines are available, of which 79 are released, 37 are under development, and 12 are archived.
+1. As of 22/04/2025: 150 pipelines are available, of which 91 are released, 46 are under development, and 13 are archived.
 
 2. [link](https://nf-co.re/atacseq)
  - `2.1.2` (15/10/2024)
@@ -1612,7 +1713,7 @@ Your task:
 
 Modify the workflow so it reads this samplesheet and correctly handles paired-end data. For this you will need to:
 
-- Create a new parameter for the samplesheet to replace the reads parameter (`params.reads`)
+- Create a new parameter for the samplesheet to replace the reads parameter (`params.reads`). Make sure the parameter has the correct type
 - Generate a channel from the samplesheet using the appropriate channel factory
 - Use the [map](https://www.nextflow.io/docs/latest/reference/operator.html#map) operator to transform each item in the channel into a tuple with the following structure: `[sample, [fastq1, fastq2]]`
 - You will need to use a function described in the [namespace documentation](https://www.nextflow.io/docs/latest/reference/stdlib-namespaces.html) to turn the strings with relative paths into actual file objects.
@@ -1767,12 +1868,13 @@ include { trimmomatic } from "../../modules/trimmomatic"
 
 // Running a workflow with the defined processes here.
 workflow {
-  def read_pairs_ch = channel
-    .fromFilePairs(params.reads, checkIfExists:true)
+  def read_pairs_ch = channel.fromPath( params.samplesheet, checkIfExists: true )
+    .splitCsv(header:true)
+    .map{ row -> tuple( row.sample, [file(row.fastq_1, checkIfExists: true), file(row.fastq_2, checkIfExists: true)] ) }
 
   read_pairs_ch.view()
   fastqc_raw(read_pairs_ch)
-  trimmomatic(read_pairs_ch)
+  trimmomatic(read_pairs_ch, params.slidingwindow, params.avgqual)
   fastqc_trim(trimmomatic.out.trim_fq)
 }
 ```
@@ -1787,6 +1889,12 @@ Similarly as described above, we can extend this pipeline and map our trimmed re
 **Exercise 2.6**
 
 In the folder `modules/` find the script `star.nf` which contains two processes: `star_index` and `star_alignment`. Complete the script `RNAseq.nf` so it includes these processes and hence the pipeline is extended with an indexing and alignment step. The parameters used in the modules are already defined for you.
+
+Your task:
+- Include the star module, and import the star processes into the main script
+- Initiate dataflow channes for both `params.genome` and `params.gtf`
+- Execute the `star_idx` process in the entry workflow and provide the correct input channels. Investigating the star.nf module can help in finding the correct input channel structure.
+- Execute the `star_alignment` process in the entry workflow. This process requires both the outputs from the `trimmomatic` and `star_idx` processes as input, as well as the channel containing the gtf file.
 
 <div class="admonition admonition-info">
 <p class="admonition-title">Note</p>
@@ -1814,7 +1922,7 @@ include { star_idx; star_alignment } from "../../modules/star"
 
 workflow {
   ...
-  star_idx(genome, gtf)
+  star_idx(genome, gtf, params.genomeSAindexNbases)
   star_alignment(trimmomatic.out.trim_fq, star_idx.out.index, gtf)
 }
 ```
@@ -1828,7 +1936,14 @@ workflow {
 
 **Exercise 2.7**
 
-In the folder `modules/` find the script `multiqc.nf`. Import the process in the main script so we can use it in the workflow. This process expects all of the zipped and html files from the fastqc processes (raw & trimmed) as one input. Thus it is necessary to use the operators `.mix()` and `.collect()` on the outputs of `fastqc_raw` and `fastqc_trim` to generate one channel with all the files.
+In the folder `modules/` find the script `multiqc.nf`. Import the process in the main script so we can use it in the workflow. This process expects all of the zipped and html files from the fastqc processes (raw & trimmed) as one input. Thus it is necessary to use some operators to transform the output channels from the fastqc processes.
+
+Your tasks:
+- Include the multiqc process into the main script
+- Use the `.mix()` operator to mix the output channels from the `fastqc_raw` and `fastqc_trim` processes, resulting in one channel containing all fastqc output files.
+- Use the `.collect()` operator on this new channel to collect all the separate files into a list containg all the files as a single item
+- Execute the multiqc process, and provide the newly created channel containing all fastq files as the input.
+
 ****************
 
     {{3-4}}
@@ -1859,7 +1974,7 @@ You might have noticed that the star_alignment process was only executed once in
 
 ```groovy
 process star_alignment {
-    publishDir "${params.outdir}/mapped-reads/", mode: 'copy', overwrite: true
+    publishDir {"${params.outdir}/mapped-reads/"}, mode: 'copy', overwrite: true
     label 'high'
     container "quay.io/biocontainers/star:2.6.1d--0"
 
@@ -2245,9 +2360,33 @@ nextflow run main.nf -profile azure,docker
 
 ### Pipeline parameters
 
-It's considered a best practice to provide defaults for all parameters at the top of the `nextflow.config` file and to never change these values in other configuration or workflow files.
+It's considered a best practice to provide defaults for all parameters at the top of the `main.nf` file and to never change these values in other configuration or workflow files.
 
-The parameters can be defined with `params.<name> = <value>` or join them all in one long list as such:
+You should declare parameters in the config file only when other config options use them. When you use a parameter in the script, you should declare it there and override it in config profiles as needed as follows:
+
+```groovy
+// in main.nf
+params {
+    input: Path
+}
+
+```
+```groovy
+// in nextflow.config
+params {
+    publish_mode = 'copy'
+}
+
+workflow.output.mode = params.publish_mode
+
+profiles {
+    test {
+        params.input = "${projectDir}/test/input.txt"
+    }
+}
+```
+
+The parameters can be defined in the config file with `params.<name> = <value>` or join them all in one long list as such:
 
 ``` groovy
 // Define defaults for project parameters needed for running the pipeline

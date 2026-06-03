@@ -1,5 +1,5 @@
 process bowtie_idx {
-    publishDir "${params.refdir}/bt2idx/", mode: 'copy', pattern: "*.bt2"  
+    publishDir {"${params.refdir}/bt2idx/"}, mode: 'copy', pattern: "*.bt2"  
     label 'high'
     container "quay.io/biocontainers/bowtie2:2.2.5--py38h8c62d01_8"
 
@@ -18,7 +18,7 @@ process bowtie_idx {
 }
 
 process bowtie_alignment {
-    publishDir "${params.outdir}/mapped-reads/", mode: 'copy', overwrite: true  //, pattern: "*.bam"  
+    publishDir {"${params.outdir}/mapped-reads/"}, mode: 'copy', overwrite: true  //, pattern: "*.bam"  
     label 'high'
     container "quay.io/biocontainers/bowtie2:2.2.5--py38h8c62d01_8"
 
