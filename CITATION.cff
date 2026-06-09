@@ -17,7 +17,7 @@ contact:
 title: "Nextflow for reproducible and automated data analysis"
 version: v0.4.0
 doi: ~
-date-released: 2025-08-10
+date-released: 2026-06-06
 keywords:
 - Nextflow
 - Data Analysis
@@ -29,4 +29,4 @@ abstract: "This hands-on training is designed to help you build scalable, reprod
 identifiers:
 - type: url
   value: https://github.com/vib-training-conferences/nextflow-reproducible-data-analysis
-  version: v2026.03
+  version: v2026.06
