@@ -123,7 +123,7 @@ Lesson overview
 >
 > <i class="fa fa-money-bill"></i> **Funding:** This project has received funding from VIB and ELIXIR Belgium.
 >
-> <i class="fa fa-anchor"></i> **PURL**: [<img src="https://zenodo.org/badge/DOI/10.5281/zenodo.19021095.svg" width="200"/>](https://zenodo.org/records/19021095)
+> <i class="fa fa-anchor"></i> **PURL**: [<img src="https://raw.githubusercontent.com/vib-training-conferences/nextflow-reproducible-data-analysis/refs/heads/main/docs/img/NextFLowZenodo.19021095.svg" width="200"/>](https://zenodo.org/records/19021095)
 >
 > ## Authors and Contributors
 >
