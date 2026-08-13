@@ -56,54 +56,12 @@ edition:  6th
 
 -->
 
-# Nextflow workshop
+# Nextflow for reproducible and automated data analysis
 
-<section>
+<img src="./docs/img/nextflow/nextflow-logo.png" width="350" align="center"/>
 
-Hello and welcome to our @tutor workshop! We are very happy to have you here. This repository contains the data, scripts, documentation and relevant information for the website containing the training materials.
-
-This is the @edition edition of this workshop, jointly organised by VIB and ELIXIR.
-
-<img src="./docs/img/nextflow/nextflow-logo.png" width="650" align="center"/>
-
-Let's start!
-
-> We are using the interactive Open Educational Resource online/offline course infrastructure called LiaScript.
-> It is a distributed way of creating and sharing educational content hosted on github.
-> To see this document as an interactive LiaScript rendered version, click on the
-> following link/badge: [LiaScript](https://liascript.github.io/course/?https://raw.githubusercontent.com/vibbits/nextflow-workshop/main/README.md)
-
-## General context
-
-This repository contains the materials (exercises) for the workshop on Nextflow on 4-5 June 2026.
-
-The **presentations** which goes alongside this material can be found [in the Lesson overview: Slides](#2) .
-
-## Proposed Schedule
-
-Schedule day 1:
-
-- 9:30 - 10:30 - Introduction to Nextflow: Building Blocks
-- 10:30 - 10:45 - Break
-- 10:45 - 12:00 - Exercises
-- 12:00 - 13:00 - lunch
-- 13:00 - 14:45 - Processes and Workflows
-- 14:45 - 15:00 - break
-- 15:00 - 17:30 - Creating our first pipeline
-
-Schedule day 2:
-
-- 9:30 - 10:45 - Modules
-- 10:45 - 11:00 - break
-- 11:00 - 12:30 - Exercises, Config files, Reports
-- 12:30 - 13:30 - lunch
-- 13:30 - 15:00 - Project Challenge
-- 15:00 - 15:15 - break
-- 15:30 - 17:00 - Project Challenge
-
-</section>
-
-## Lesson overview
+Lesson overview
+----------------
 
 > <i class="fa fa-lock"></i> **License:** [Creative Commons Attribution 4.0 International  License](https://creativecommons.org/licenses/by/4.0/deed.en)
 >
@@ -116,26 +74,45 @@ Schedule day 2:
 >
 > 1. Knowledge of Command line Interface is a plus
 >
-> <i class="fa fa-bookmark"></i> **Description** This course aims to get you familiarized with Nextflow. After this course you should be able to understand workflow pipelines that are written in Nextflow and write simple pipelines yourself.
+> If you lack command-line experience, you can prepare by following this [e-learning or Linux introduction](https://www.vibtrainingandconferences.be/events?f%5B0%5D=status%3Aupcoming&text=linux).
+>
+> <i class="fa fa-bookmark"></i> **Description** This hands-on course introduces the principles and practice of building scalable and reproducible data analysis pipelines using Nextflow. As bioinformatics data volumes increase and analyses become more complex, workflow management tools play a key role in ensuring reproducibility and efficiency. 
+>
+> During the training, you will learn to develop and run pipelines on local machines, HPC clusters, and cloud platforms. Starting with the basics, the course guides you through creating a simple pipeline and enhancing it with Nextflow’s modern DSL2 syntax. 
+>
+>This repository contains the materials (exercises) for the workshop on Nextflow on 4-5 June 2026.
+>The **presentations** which goes alongside this material can be found [in the Lesson overview: Slides](#2) .
 >
 > <i class="fa fa-arrow-right"></i> **Learning Outcomes:**
 > By the end of the course, learners will be able to:
 >
-> 1. Understand Nextflow's basic concepts & syntax: channels, processes, modules, workflows, etc.
-> 2. Execute local and publicly available pipelines with different executors and environments
-> 3. Write and run Nextflow pipelines
-> 4. Write and modify config files for storing parameters related to computing hardware as well as pipeline dependent parameters
+> 1. Describe the core components of Nextflow (e.g., channels, processes, modules, workflows)
+> 2. Explain the roles of each component in pipeline development and the reproducibility aspect
+> 3. Construct a basic Nextflow pipeline using DSL2 syntax and execute it on a local machine.
+> 4. Modify configuration files to adapt pipeline parameters for different computing environments (e.g., local, cluster, cloud).
+> 5. Apply best practices for reproducibility and scalability in workflow design.
+> 6. Debug and refactor a simple pipeline to improve clarity, modularity, and performance.
 >
->> Check more about [Bloom's taxonomy](https://cft.vanderbilt.edu/guides-sub-pages/blooms-taxonomy/) to categorize the levels in educational goals
+> <i class="fa fa-hourglass"></i> **Time estimation**: 16 hours (2 days)
 >
-> <i class="fa fa-hourglass"></i> **Time estimation**: 16 hours
->
-> <i class="fa fa-asterisk"></i> **Requirements:** The (technical) installation requirements are described in the Chapters overview section Getting ready.
+> <i class="fa fa-asterisk"></i> **Requirements:** The (technical) installation requirements are described in this [file](./docs/installations.md)
 >
 > <i class="fa fa-envelope-open-text"></i> **Supporting Materials**:
 >
 > 1. [Exercises and solutions](https://github.com/vibbits/nextflow-workshop)
 > 2. [Slides day 1+2](https://docs.google.com/presentation/d/1sv79FpO-kN8BO271SG5oDHrVJBEdJGnh0_TG8qzDyGI/edit?usp=sharing)
+>
+> ## Proposed Schedule 
+>
+> |time | Day 1 | Time | Day 2 |
+> | --- |  ---  |  --- |  ---  |
+> |09h30 - 10h30 | Introduction to Nextflow: Building Blocks|9h30 - 10h45  | Modules |
+> |10h30 - 10h45 | Break | 10h45 - 11h00 | Break  |
+> |10h45 - 12h00 | Exercises| 11h00 - 12h30 | Exercises |
+> |12h00 - 13h00 | Lunch | 12h30 - 13h30 | Lunch |
+> |13h00 - 14h45 | Processes and Workflows| 13h30 - 15h00 | Config files, Reports |
+> |14h45 - 15h00 | Break | 15h00 - 15h15 | break |
+> |15h00 - 17h30 | Creating our first pipeline |15h30 - 17h00 | Project Challenge |
 >
 > <i class="fa fa-life-ring"></i> **Acknowledgement**:
 >
@@ -145,38 +122,55 @@ Schedule day 2:
 >
 > <i class="fa fa-money-bill"></i> **Funding:** This project has received funding from VIB and ELIXIR Belgium.
 >
-> <i class="fa fa-anchor"></i> **PURL**:
+> <i class="fa fa-anchor"></i> **PURL**: 
+>
+>[<img src="https://doi.org/10.5281/zenodo.19021095" width="50"/>](https://zenodo.org/records/19021095)
+>
+> ## Authors and Contributors
+>
+> Authors
+>
+> [<img src="https://raw.githubusercontent.com/vib-training-conferences/training_material_template/refs/heads/main/docs/images/ORCID-iD_icon_vector.svg" width="20"/>](https://orcid.org/0000-0003-0490-5969) Kobe Lavaerts
+>
+> [<img src="https://raw.githubusercontent.com/vib-training-conferences/training_material_template/refs/heads/main/docs/images/ORCID-iD_icon_vector.svg" width="20"/>](https://orcid.org/0009-0003-5619-1555) Nicolas Vannieuwkerke
+>
+> [<img src="https://raw.githubusercontent.com/vib-training-conferences/training_material_template/refs/heads/main/docs/images/ORCID-iD_icon_vector.svg" width="20"/>](https://orcid.org/0000-0002-3926-7293) Tuur Muyldermans
+>
+> [<img src="https://raw.githubusercontent.com/vib-training-conferences/training_material_template/refs/heads/main/docs/images/ORCID-iD_icon_vector.svg" width="20"/>](https://orcid.org/0000-0003-2182-1249) Kris Davie
+>
+> Contributors
+>
+>[<img src="https://raw.githubusercontent.com/vib-training-conferences/training_material_template/refs/heads/main/docs/images/ORCID-iD_icon_vector.svg" width="20"/>](https://orcid.org/0000-0002-2685-4130) Steff Taelman
+>
+>[<img src="https://raw.githubusercontent.com/vib-training-conferences/training_material_template/refs/heads/main/docs/images/ORCID-iD_icon_vector.svg" width="20"/>](https://orcid.org/0000-0001-5958-0669) Bruna Piereck
+>
+>[<img src="https://raw.githubusercontent.com/vib-training-conferences/training_material_template/refs/heads/main/docs/images/ORCID-iD_icon_vector.svg" width="20"/>](https://orcid.org/0000-0001-6691-4233) Alexander Botzki
+>
+> ** We welcome contributors for these materials **
+> ## Citing this lesson
+>
+> Please cite as:
+>
+>Lavaerts, K., Vannieuwkerke, N., Muyldermans, T., Davie, K.& Taelman, S. (2026, March 14). Nextflow for reproducible and automated data analysis. Zenodo. https://doi.org/10.5281/zenodo.19021095
+>
+> ## Chapters List
+>
+>| Chapter | Title                                                   |
+>| :---- | :------------------------------------------------         |
+>| 0     | [Getting Ready](#get-ready-for-the-course)  |
+>| 1     | [Building blocks](#building-blocks)  |
+>| 2     | [Executing pipelines](#executing-pipelines)  |
+>| 3     | [Creating first pipeline](#creating-our-first-pipeline)  |
+>| 4     | [Configuration files](#configuration-files)  |
+>| 5     | [Creating reports](#creating-reports)  |
+>| 6     | [Project](#project)  |
 
+# Workshop and Material organization
 
-## Authors and Contributors
-
-Authors
-
-- @[orcid(Bruna Piereck)](https://orcid.org/0000-0001-5958-0669)
-- @[orcid(Alexander Botzki)](https://orcid.org/0000-0001-6691-4233)
-- @[orcid(Tuur Muyldermans)](https://orcid.org/0000-0002-3926-7293)
-- @[orcid(Kris Davie)](https://orcid.org/0000-0003-2182-1249)
-- @[orcid(Kobe Lavaerts)](https://orcid.org/0000-0003-0490-5969)
-- @[orcid(Tuur Muyldermans)](https://orcid.org/0000-0002-3926-7293)
-- @[orcid(Steff Taelman)](https://orcid.org/0000-0002-2685-4130)
-- @[orcid(Nicolas Vannieuwkerke)](https://orcid.org/0009-0003-5619-1555)
-
-Contributors
-
-- we welcome contributors for these materials
-
-
-## Chapters List
-
-| Chapter | Title                                                   |
-| :---- | :------------------------------------------------         |
-| 0     | [Getting Ready](#get-ready-for-the-course)  |
-| 1     | [Building blocks](#building-blocks)  |
-| 2     | [Executing pipelines](#executing-pipelines)  |
-| 3     | [Creating first pipeline](#creating-our-first-pipeline)  |
-| 4     | [Configuration files](#configuration-files)  |
-| 5     | [Creating reports](#creating-reports)  |
-| 6     | [Project](#project)  |
+> We are using the interactive Open Educational Resource online/offline course infrastructure called LiaScript.
+> It is a distributed way of creating and sharing educational content hosted on github.
+> To see this document as an interactive LiaScript rendered version, click on the
+> following link/badge: [LiaScript](https://liascript.github.io/course/?https://raw.githubusercontent.com/vibbits/nextflow-workshop/main/README.md)
 
 ## Get ready for the course
 
