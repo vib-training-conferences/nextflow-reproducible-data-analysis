@@ -86,24 +86,6 @@ Lesson overview
 >
 > 1. [Course materials](https://github.com/vib-tcp/nextflow-workshop)
 >
-> **Course instance:**
-> Date: 2026-12-07
-> Location: Ghent - VIB/UGent FSVM II, Technologiepark 75, Zwijnaarde, 9052, BE
->
-## Authors and Contributors
-
-Authors
-
-> [ ](https://orcid.org/0000-0003-0490-5969) Kobe Lavaerts
-> [ ](https://orcid.org/0009-0003-5619-1555) Nicolas Vannieuwkerke
-> [ ](https://orcid.org/0000-0002-3926-7293) Tuur Muyldermans
-> [ ](https://orcid.org/0000-0003-2182-1249) Kris Davie
->
-Contributors
->
-> [ ](https://orcid.org/0000-0002-2685-4130) Steff Taelman
-> [ ](https://orcid.org/0000-0001-5958-0669) Bruna Piereck
-> [ ](https://orcid.org/0000-0001-6691-4233) Alexander Botzki
 
 # Workshop and Material organization
 
