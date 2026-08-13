@@ -1,23 +1,25 @@
 #!/usr/bin/env python3
-"""Update a LiaScript course README from a VIB course page.
+"""Merge course JSON-LD metadata into a LiaScript README lesson overview.
 
-The script first tries to read Schema.org/Bioschemas JSON-LD from the HTML page.
-If no JSON-LD is available, it falls back to parsing visible HTML sections.
-It then updates the original LiaScript-flavoured README template rather than
-appending a generic metadata block.
+This script is intentionally conservative:
+- It fetches JSON-LD from the courseURL in the README, or from --url.
+- It updates only known metadata blocks inside the existing LiaScript
+  "Lesson overview" section.
+- It preserves unknown/custom LiaScript blocks, including fa/icon classes,
+  schedules, acknowledgements, funding, PURL, chapter lists and all course body
+  content exactly as much as possible.
+- It updates or inserts the final LiaScript @JSONLD block by merging existing
+  JSON-LD and fetched JSON-LD metadata.
 
-It rewrites, where present:
-  - the main Markdown title
-  - the LiaScript "Lesson overview" blockquote section
-  - the embedded LiaScript @JSONLD block
-
-The rest of the lesson content is preserved.
+Typical use:
+  python scripts/update_readme_from_jsonld.py --readme README.md
+  python scripts/update_readme_from_jsonld.py --url https://training.vib.be/... --readme README.md
+  python scripts/update_readme_from_jsonld.py --readme README.md --dry-run
 """
 
 from __future__ import annotations
 
 import argparse
-import datetime as dt
 import html
 import json
 import re
@@ -26,11 +28,20 @@ from dataclasses import dataclass, field
 from html.parser import HTMLParser
 from pathlib import Path
 from typing import Any, Iterable
-from urllib.parse import urljoin
 from urllib.request import Request, urlopen
 
 COURSE_TYPES = {"course", "learningresource", "trainingmaterial", "event", "educationevent", "courseinstance"}
 INSTANCE_TYPES = {"courseinstance", "event", "educationevent"}
+KNOWN_FIELDS = [
+    "License",
+    "Target Audience",
+    "Level",
+    "Prerequisites",
+    "Description",
+    "Learning Outcomes",
+    "Time estimation",
+    "Supporting Materials",
+]
 
 
 @dataclass
@@ -50,127 +61,48 @@ class CourseMetadata:
     educational_level: str = ""
     prerequisites: list[str] = field(default_factory=list)
     teaches: list[str] = field(default_factory=list)
-    license_url: str = "https://creativecommons.org/licenses/by/4.0/"
-    language: str = "en-US"
-    start_date: str = ""
-    end_date: str = ""
+    license_url: str = ""
+    language: str = ""
     duration: str = ""
-    location: str = ""
     materials_url: str = ""
-    learning_resource_type: list[str] = field(default_factory=lambda: ["tutorial"])
     authors: list[Person] = field(default_factory=list)
     contributors: list[Person] = field(default_factory=list)
-    trainers: list[Person] = field(default_factory=list)
 
 
 class JsonLdHTMLParser(HTMLParser):
     def __init__(self) -> None:
         super().__init__(convert_charrefs=True)
-        self.in_head = False
         self.in_jsonld = False
         self.current: list[str] = []
-        self.current_in_head = False
-        self.head_blocks: list[str] = []
-        self.all_blocks: list[str] = []
+        self.blocks: list[str] = []
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
-        tag = tag.lower()
-        if tag == "head":
-            self.in_head = True
+        if tag.lower() != "script":
             return
-        if tag != "script":
-            return
-        attrs_d = {k.lower(): (v or "") for k, v in attrs}
-        script_type = attrs_d.get("type", "").lower().split(";", 1)[0].strip()
+        attr = {k.lower(): (v or "") for k, v in attrs}
+        script_type = attr.get("type", "").lower().split(";", 1)[0].strip()
         if script_type == "application/ld+json":
             self.in_jsonld = True
             self.current = []
-            self.current_in_head = self.in_head
 
     def handle_data(self, data: str) -> None:
         if self.in_jsonld:
             self.current.append(data)
 
     def handle_endtag(self, tag: str) -> None:
-        tag = tag.lower()
-        if tag == "script" and self.in_jsonld:
+        if tag.lower() == "script" and self.in_jsonld:
             block = "".join(self.current).strip()
             if block:
-                self.all_blocks.append(block)
-                if self.current_in_head:
-                    self.head_blocks.append(block)
+                self.blocks.append(block)
             self.in_jsonld = False
             self.current = []
-            self.current_in_head = False
-        elif tag == "head":
-            self.in_head = False
-
-
-class ReadableHTMLParser(HTMLParser):
-    BLOCK_TAGS = {"p", "div", "section", "article", "br", "li", "tr", "h1", "h2", "h3", "h4", "h5", "h6"}
-
-    def __init__(self, base_url: str) -> None:
-        super().__init__(convert_charrefs=True)
-        self.base_url = base_url
-        self.parts: list[str] = []
-        self.links: list[tuple[str, str]] = []
-        self.current_href = ""
-        self.current_link_text: list[str] = []
-        self.skip_depth = 0
-
-    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
-        tag = tag.lower()
-        if tag in {"script", "style", "noscript", "svg"}:
-            self.skip_depth += 1
-            return
-        if tag in self.BLOCK_TAGS:
-            self.parts.append("\n")
-        if tag == "a":
-            attrs_d = {k.lower(): (v or "") for k, v in attrs}
-            self.current_href = urljoin(self.base_url, attrs_d.get("href", ""))
-            self.current_link_text = []
-
-    def handle_data(self, data: str) -> None:
-        if self.skip_depth:
-            return
-        text = re.sub(r"\s+", " ", data).strip()
-        if not text:
-            return
-        self.parts.append(text)
-        self.parts.append(" ")
-        if self.current_href:
-            self.current_link_text.append(text)
-
-    def handle_endtag(self, tag: str) -> None:
-        tag = tag.lower()
-        if tag in {"script", "style", "noscript", "svg"} and self.skip_depth:
-            self.skip_depth -= 1
-            return
-        if tag == "a" and self.current_href:
-            label = re.sub(r"\s+", " ", " ".join(self.current_link_text)).strip()
-            if label:
-                self.links.append((label, self.current_href))
-            self.current_href = ""
-            self.current_link_text = []
-        if tag in self.BLOCK_TAGS:
-            self.parts.append("\n")
-
-    def lines(self) -> list[str]:
-        text = html.unescape("".join(self.parts))
-        text = re.sub(r"[ \t]+", " ", text)
-        raw_lines = [x.strip() for x in text.splitlines()]
-        out: list[str] = []
-        for line in raw_lines:
-            if line and (not out or out[-1] != line):
-                out.append(line)
-        return out
 
 
 def fetch_html(url: str, timeout: int = 30) -> str:
     req = Request(
         url,
         headers={
-            "User-Agent": "Mozilla/5.0 liascript-course-readme-updater/1.0",
+            "User-Agent": "Mozilla/5.0 liascript-jsonld-readme-merger/1.0",
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         },
     )
@@ -179,22 +111,21 @@ def fetch_html(url: str, timeout: int = 30) -> str:
         return response.read().decode(charset, errors="replace")
 
 
-def jsonld_blocks_from_html(html_text: str, prefer_head: bool = True) -> list[str]:
+def jsonld_blocks_from_html(text: str) -> list[str]:
     parser = JsonLdHTMLParser()
-    parser.feed(html_text)
-    blocks = parser.head_blocks if prefer_head and parser.head_blocks else parser.all_blocks
-    if blocks:
-        return blocks
-    # Fallback independent of HTMLParser head tracking.
+    parser.feed(text)
+    if parser.blocks:
+        return parser.blocks
+    # Fallback for malformed HTML or unusual attribute order.
     script_re = re.compile(
         r"<script\b(?=[^>]*\btype\s*=\s*(['\"])application/ld\+json(?:;[^'\"]*)?\1)[^>]*>(.*?)</script>",
         re.I | re.S,
     )
-    return [m.group(2).strip() for m in script_re.finditer(html_text) if m.group(2).strip()]
+    return [m.group(2).strip() for m in script_re.finditer(text) if m.group(2).strip()]
 
 
 def parse_jsonld_blocks(blocks: Iterable[str]) -> list[Any]:
-    objects: list[Any] = []
+    out: list[Any] = []
     for block in blocks:
         block = html.unescape(block.strip())
         block = re.sub(r"^\s*<!--", "", block)
@@ -203,8 +134,22 @@ def parse_jsonld_blocks(blocks: Iterable[str]) -> list[Any]:
             parsed = json.loads(block)
         except json.JSONDecodeError:
             continue
-        objects.extend(parsed if isinstance(parsed, list) else [parsed])
-    return objects
+        out.extend(parsed if isinstance(parsed, list) else [parsed])
+    return out
+
+
+def parse_embedded_lia_jsonld(readme: str) -> dict[str, Any]:
+    # Supports the common LiaScript style:
+    # ```json
+    # @JSONLD { ... }
+    # ```
+    match = re.search(r"(?ms)^```json\s*\n@JSONLD\s*(\{.*?\})\s*\n```", readme)
+    if not match:
+        return {}
+    try:
+        return json.loads(match.group(1))
+    except json.JSONDecodeError:
+        return {}
 
 
 def as_list(value: Any) -> list[Any]:
@@ -213,20 +158,27 @@ def as_list(value: Any) -> list[Any]:
     return value if isinstance(value, list) else [value]
 
 
-def strip_tags(value: Any) -> str:
-    text = re.sub(r"<[^>]+>", " ", str(value or ""))
-    return re.sub(r"\s+", " ", html.unescape(text)).strip()
+def clean_text(value: Any) -> str:
+    value = re.sub(r"<[^>]+>", " ", str(value or ""))
+    return re.sub(r"\s+", " ", html.unescape(value)).strip()
+
+
+def unique(items: Iterable[str]) -> list[str]:
+    out: list[str] = []
+    for item in items:
+        item = clean_text(item)
+        if item and item not in out:
+            out.append(item)
+    return out
 
 
 def text_list(value: Any) -> list[str]:
-    out: list[str] = []
+    values: list[str] = []
     for item in as_list(value):
         if isinstance(item, dict):
             item = item.get("name") or item.get("text") or item.get("@id") or item.get("url") or ""
-        label = strip_tags(item)
-        if label and label not in out:
-            out.append(label)
-    return out
+        values.append(str(item))
+    return unique(values)
 
 
 def first_text(*values: Any) -> str:
@@ -235,10 +187,6 @@ def first_text(*values: Any) -> str:
         if items:
             return items[0]
     return ""
-
-
-def type_names(item: dict[str, Any]) -> set[str]:
-    return {str(t).lower() for t in as_list(item.get("@type"))}
 
 
 def flatten_jsonld(node: Any) -> Iterable[dict[str, Any]]:
@@ -252,10 +200,14 @@ def flatten_jsonld(node: Any) -> Iterable[dict[str, Any]]:
                 yield from flatten_jsonld(node[key])
 
 
+def type_names(item: dict[str, Any]) -> set[str]:
+    return {str(t).lower() for t in as_list(item.get("@type"))}
+
+
 def score_jsonld(item: dict[str, Any], instance: bool = False) -> int:
     wanted = INSTANCE_TYPES if instance else COURSE_TYPES
     score = 10 * len(type_names(item) & wanted)
-    for key in ["name", "description", "teaches", "learningOutcome", "audience", "educationalLevel", "startDate", "endDate", "location", "author", "contributor", "instructor"]:
+    for key in ["name", "description", "teaches", "learningOutcome", "audience", "educationalLevel", "competencyRequired", "license", "author", "contributor"]:
         if item.get(key):
             score += 1
     return score
@@ -265,7 +217,10 @@ def select_course_and_instance(objects: list[Any]) -> tuple[dict[str, Any], dict
     flat = [x for obj in objects for x in flatten_jsonld(obj) if isinstance(x, dict)]
     courses = [x for x in flat if type_names(x) & COURSE_TYPES]
     if not courses:
-        raise ValueError("JSON-LD was parsed, but no course-like object was found.")
+        # Some pages only publish a generic CreativeWork with useful fields.
+        courses = [x for x in flat if x.get("name") or x.get("description")]
+    if not courses:
+        raise ValueError("No course-like JSON-LD object found.")
     descriptive = [x for x in courses if not (type_names(x) <= INSTANCE_TYPES)] or courses
     course = max(descriptive, key=lambda x: score_jsonld(x, False))
     instances = [x for x in flat if type_names(x) & INSTANCE_TYPES]
@@ -277,7 +232,7 @@ def person_list(value: Any) -> list[Person]:
     people: list[Person] = []
     for item in as_list(value):
         if isinstance(item, dict):
-            name = strip_tags(item.get("name", ""))
+            name = clean_text(item.get("name", ""))
             url = str(item.get("url") or item.get("@id") or "")
             orcid = ""
             for same in as_list(item.get("sameAs")):
@@ -287,19 +242,19 @@ def person_list(value: Any) -> list[Person]:
             if not orcid and "orcid.org" in url:
                 orcid = url
         else:
-            name, url, orcid = strip_tags(item), "", ""
+            name, url, orcid = clean_text(item), "", ""
         if name and all(p.name != name for p in people):
             people.append(Person(name=name, url=url, orcid=orcid))
     return people
 
 
-def extract_keywords(value: Any) -> list[str]:
+def keywords(value: Any) -> list[str]:
     if isinstance(value, str):
-        return [x.strip() for x in re.split(r"[,;]", value) if x.strip()]
+        return unique(re.split(r"[,;]", value))
     return text_list(value)
 
 
-def extract_audience(*values: Any) -> list[str]:
+def audience_values(*values: Any) -> list[str]:
     out: list[str] = []
     for value in values:
         for item in as_list(value):
@@ -307,241 +262,214 @@ def extract_audience(*values: Any) -> list[str]:
                 out.extend(text_list(item.get("audienceType") or item.get("name") or item.get("@type")))
             else:
                 out.extend(text_list(item))
-    return list(dict.fromkeys(out))
-
-
-def extract_material_url(*values: Any) -> str:
-    for value in values:
-        for item in as_list(value):
-            if isinstance(item, dict) and (item.get("url") or item.get("@id")):
-                return str(item.get("url") or item.get("@id"))
-            if isinstance(item, str) and item.startswith("http"):
-                return item
-    return ""
-
-
-def extract_location(*values: Any) -> str:
-    for value in values:
-        if isinstance(value, dict):
-            parts: list[str] = []
-            if value.get("name"):
-                parts.append(str(value["name"]))
-            address = value.get("address")
-            if isinstance(address, dict):
-                parts.extend(str(address[k]) for k in ["streetAddress", "addressLocality", "addressRegion", "postalCode", "addressCountry"] if address.get(k))
-            elif address:
-                parts.append(str(address))
-            clean = ", ".join(dict.fromkeys(strip_tags(p) for p in parts if p))
-            if clean:
-                return clean
-        else:
-            text = first_text(value)
-            if text:
-                return text
-    return ""
+    return unique(out)
 
 
 def metadata_from_jsonld(objects: list[Any], source_url: str) -> CourseMetadata:
     course, instance = select_course_and_instance(objects)
-    prereq = course.get("competencyRequired") or course.get("coursePrerequisites") or course.get("educationalPrerequisites") or instance.get("competencyRequired")
+    prereq = (
+        course.get("competencyRequired")
+        or course.get("coursePrerequisites")
+        or course.get("educationalPrerequisites")
+        or instance.get("competencyRequired")
+    )
+    material = ""
+    for value in [course.get("workFeatured"), course.get("hasPart"), course.get("associatedMedia"), course.get("url"), course.get("@id")]:
+        for item in as_list(value):
+            if isinstance(item, dict) and (item.get("url") or item.get("@id")):
+                material = str(item.get("url") or item.get("@id"))
+                break
+            if isinstance(item, str) and item.startswith("http"):
+                material = item
+                break
+        if material:
+            break
     return CourseMetadata(
         source_url=source_url,
         name=first_text(course.get("name"), instance.get("name")),
         description=first_text(course.get("description"), instance.get("description")),
-        keywords=extract_keywords(course.get("keywords") or instance.get("keywords")),
-        audience=extract_audience(course.get("audience"), instance.get("audience")),
+        keywords=keywords(course.get("keywords") or instance.get("keywords")),
+        audience=audience_values(course.get("audience"), instance.get("audience")),
         educational_level=first_text(course.get("educationalLevel"), instance.get("educationalLevel")),
         prerequisites=text_list(prereq),
         teaches=text_list(course.get("teaches") or course.get("learningOutcome") or instance.get("teaches") or instance.get("learningOutcome")),
-        license_url=first_text(course.get("license"), instance.get("license")) or "https://creativecommons.org/licenses/by/4.0/",
-        language=first_text(course.get("inLanguage"), instance.get("inLanguage")) or "en-US",
-        start_date=first_text(instance.get("startDate"), course.get("startDate")),
-        end_date=first_text(instance.get("endDate"), course.get("endDate")),
-        duration=first_text(instance.get("duration"), course.get("duration"), course.get("timeRequired")),
-        location=extract_location(instance.get("location"), course.get("location")),
-        materials_url=extract_material_url(course.get("workFeatured"), course.get("hasPart"), course.get("associatedMedia"), course.get("url")),
+        license_url=first_text(course.get("license"), instance.get("license")),
+        language=first_text(course.get("inLanguage"), instance.get("inLanguage")),
+        duration=first_text(course.get("duration"), course.get("timeRequired"), instance.get("duration")),
+        materials_url=material,
         authors=person_list(course.get("author") or course.get("creator")),
         contributors=person_list(course.get("contributor")),
-        trainers=person_list(instance.get("instructor") or instance.get("performer") or course.get("instructor")),
     )
 
 
-def lines_between(lines: list[str], start: str, end: str | list[str]) -> list[str]:
-    ends = [end] if isinstance(end, str) else end
-    try:
-        i = next(idx for idx, line in enumerate(lines) if line.lower() == start.lower()) + 1
-    except StopIteration:
-        return []
-    j = len(lines)
-    for idx in range(i, len(lines)):
-        if any(lines[idx].lower() == e.lower() for e in ends):
-            j = idx
+def extract_course_url(readme: str) -> str:
+    # Prefer frontmatter/comment key courseURL used by the reference README.
+    match = re.search(r"courseURL:\s*(https?://\S+)", readme)
+    if match:
+        return match.group(1).strip().rstrip("->")
+    urls = re.findall(r"https?://[^\s)>'\"]+", readme)
+    return next((u for u in urls if "training.vib.be/all-trainings" in u), urls[0] if urls else "")
+
+
+def locate_lesson_overview(readme: str) -> tuple[int, int, str]:
+    start_match = re.search(r"(?m)^Lesson overview\s*\n[-=]+\s*$", readme)
+    if not start_match:
+        raise ValueError("Could not find a 'Lesson overview' section in the README.")
+    start = start_match.start()
+    # In the reference README, the Lesson overview ends before the first real course body H1.
+    end_match = re.search(r"(?m)^# Workshop and Material organization\s*$", readme[start_match.end() :])
+    if end_match:
+        end = start_match.end() + end_match.start()
+    else:
+        # Fallback: next top-level heading after the overview heading.
+        next_h1 = re.search(r"(?m)^#\s+", readme[start_match.end() :])
+        end = start_match.end() + next_h1.start() if next_h1 else len(readme)
+    return start, end, readme[start:end]
+
+
+def field_name_from_line(line: str) -> str | None:
+    cleaned = line.strip()
+    cleaned = cleaned[1:].strip() if cleaned.startswith(">") else cleaned
+    match = re.match(r"\*\*([^*]+?)\*\*\s*:?:?", cleaned)
+    if not match:
+        return None
+    name = match.group(1).strip().rstrip(":")
+    # Normalize common variants.
+    if name.lower() == "time estimation":
+        return "Time estimation"
+    return name
+
+
+def split_overview_blocks(section: str) -> tuple[list[str], list[tuple[str | None, list[str]]]]:
+    lines = section.splitlines()
+    # Keep the heading lines untouched.
+    heading: list[str] = []
+    idx = 0
+    while idx < len(lines):
+        heading.append(lines[idx])
+        if re.match(r"^[-=]+\s*$", lines[idx]):
+            idx += 1
             break
-    return [x for x in lines[i:j] if x]
+        idx += 1
+
+    blocks: list[tuple[str | None, list[str]]] = []
+    current_name: str | None = None
+    current: list[str] = []
+    for line in lines[idx:]:
+        name = field_name_from_line(line)
+        is_known_start = name in KNOWN_FIELDS
+        # Do not treat headings such as > ## Proposed Schedule as fields.
+        if is_known_start and current:
+            blocks.append((current_name, current))
+            current_name = name
+            current = [line]
+        elif is_known_start:
+            current_name = name
+            current = [line]
+        else:
+            current.append(line)
+    if current:
+        blocks.append((current_name, current))
+    return heading, blocks
 
 
-def metadata_from_html(html_text: str, source_url: str) -> CourseMetadata:
-    parser = ReadableHTMLParser(source_url)
-    parser.feed(html_text)
-    lines = parser.lines()
-    lower = [x.lower() for x in lines]
-
-    def after(label: str) -> str:
-        label_l = label.lower()
-        for idx, line in enumerate(lower):
-            if line == label_l and idx + 1 < len(lines):
-                return lines[idx + 1]
-            if line.startswith(label_l) and len(lines[idx]) > len(label):
-                return lines[idx][len(label):].strip(" :")
-        return ""
-
-    title = ""
-    for line in lines:
-        if line not in {"Home", "All training"}:
-            title = line
-            break
-
-    date_line = ""
-    for line in lines[:30]:
-        if re.search(r"\d{1,2}\s+[A-Za-z]+\s+\d{4}", line):
-            date_line = line
-            break
-
-    description = "\n".join(lines_between(lines, "General context", ["Learning outcomes", "Approach"]))
-    teaches = lines_between(lines, "Learning outcomes", ["Approach", "Event intended for"])
-    prerequisites = lines_between(lines, "Required skills", ["Course materials", "Extra information"])
-    audience = lines_between(lines, "Target Audience:", ["Location:", "Duration:"]) or [after("Event intended for")]
-    audience = [x for x in audience if x and x != ":"]
-    location_value = after("Location:")
-    duration_value = " ".join(lines_between(lines, "Duration:", ["General context"]))
-
-    materials_url = ""
-    for label, href in parser.links:
-        if "github.com" in href or "course materials" in label.lower() or title.lower() in label.lower():
-            materials_url = href
-            break
-
-    trainers: list[Person] = []
-    trainer_lines = lines_between(lines, "Trainers", ["Program", "Practical info"])
-    for idx, item in enumerate(trainer_lines):
-        if item.startswith("VIB ") or item.startswith("CMGG") or "@" in item or item == "ORCID" or item.startswith("Contact"):
-            continue
-        if idx + 1 < len(trainer_lines) and (trainer_lines[idx + 1].startswith("VIB") or trainer_lines[idx + 1].startswith("CMGG")):
-            trainers.append(Person(name=item))
-
-    return CourseMetadata(
-        source_url=source_url,
-        name=title,
-        description=description,
-        audience=audience,
-        prerequisites=prerequisites,
-        teaches=teaches,
-        start_date=date_line,
-        duration=duration_value,
-        location=location_value,
-        materials_url=materials_url,
-        trainers=trainers,
-    )
+def quote_line(text: str = "") -> str:
+    return ">" if text == "" else f"> {text}"
 
 
-def parse_existing_people(readme_text: str) -> tuple[list[Person], list[Person]]:
-    authors: list[Person] = []
-    contributors: list[Person] = []
-    current: list[Person] | None = None
-    for line in readme_text.splitlines():
-        clean = line.strip().lstrip(">").strip()
-        if clean.lower() == "authors":
-            current = authors
-            continue
-        if clean.lower() == "contributors":
-            current = contributors
-            continue
-        if clean.startswith("## ") and current is not None:
-            current = None
-        if current is None:
-            continue
-        m = re.search(r"\]\((https://orcid\.org/[^)]+)\)\s*(.+)$", clean)
-        if m:
-            current.append(Person(name=m.group(2).strip(), orcid=m.group(1)))
-        elif clean and not clean.startswith("**"):
-            name = re.sub(r"^[-*]\s*", "", clean).strip()
-            if name:
-                current.append(Person(name=name))
-    return authors, contributors
+def render_list(items: list[str]) -> list[str]:
+    return [quote_line(f"{i}. {item}") for i, item in enumerate(items, 1)]
 
 
-def merge_missing_metadata(meta: CourseMetadata, readme_text: str) -> CourseMetadata:
-    old_authors, old_contributors = parse_existing_people(readme_text)
-    if not meta.authors and old_authors:
-        meta.authors = old_authors
-    if not meta.contributors and old_contributors:
-        meta.contributors = old_contributors
-    if not meta.educational_level:
-        level_match = re.search(r"\*\*Level:\*\*\s*([^\n>]+)", readme_text, re.I)
-        if level_match:
-            meta.educational_level = level_match.group(1).strip()
-    return meta
+def render_field(name: str, meta: CourseMetadata, existing_block: list[str] | None = None) -> list[str]:
+    # If JSON-LD has no value for this field, preserve the existing block exactly.
+    existing_block = existing_block or []
+    if name == "License":
+        if not meta.license_url:
+            return existing_block
+        label = "Creative Commons Attribution 4.0 International License"
+        return [quote_line(f"**License:** [{label}]({meta.license_url})"), quote_line()]
+    if name == "Target Audience":
+        if not meta.audience:
+            return existing_block
+        return [quote_line(f"**Target Audience:** {', '.join(meta.audience)}"), quote_line()]
+    if name == "Level":
+        if not meta.educational_level:
+            return existing_block
+        return [quote_line(f"**Level:** {meta.educational_level}"), quote_line()]
+    if name == "Prerequisites":
+        if not meta.prerequisites:
+            return existing_block
+        return [
+            quote_line("**Prerequisites**"),
+            quote_line("To be able to follow this course, learners should have knowledge in:"),
+            quote_line(),
+            *render_list(meta.prerequisites),
+            quote_line(),
+        ]
+    if name == "Description":
+        if not meta.description:
+            return existing_block
+        lines = [quote_line("**Description**")]
+        for paragraph in re.split(r"\n\s*\n|\n", meta.description):
+            paragraph = paragraph.strip()
+            if paragraph:
+                lines.append(quote_line(paragraph))
+                lines.append(quote_line())
+        return lines
+    if name == "Learning Outcomes":
+        if not meta.teaches:
+            return existing_block
+        return [
+            quote_line("**Learning Outcomes:**"),
+            quote_line("By the end of the course, learners will be able to:"),
+            quote_line(),
+            *render_list(meta.teaches),
+            quote_line(),
+        ]
+    if name == "Time estimation":
+        if not meta.duration:
+            return existing_block
+        return [quote_line(f"**Time estimation**: {meta.duration}"), quote_line()]
+    if name == "Supporting Materials":
+        if not meta.materials_url:
+            return existing_block
+        return [
+            quote_line("**Supporting Materials**:"),
+            quote_line(),
+            quote_line(f"1. [Course materials]({meta.materials_url})"),
+            quote_line(),
+        ]
+    return existing_block
 
 
-def markdown_list(items: list[str], quote: bool = True) -> list[str]:
-    prefix = "> " if quote else ""
-    return [f"{prefix}{i}. {item}" for i, item in enumerate(items, 1)]
+def merge_lesson_overview(readme: str, meta: CourseMetadata) -> str:
+    start, end, section = locate_lesson_overview(readme)
+    heading, blocks = split_overview_blocks(section)
 
+    seen: set[str] = set()
+    merged_lines: list[str] = heading[:]
+    for name, block in blocks:
+        if name in KNOWN_FIELDS:
+            merged_lines.extend(render_field(name, meta, block))
+            seen.add(name)
+        else:
+            merged_lines.extend(block)
 
-def render_person(person: Person, quote: bool = True) -> str:
-    prefix = "> " if quote else ""
-    if person.orcid:
-        return f"{prefix}[ ]({person.orcid}) {person.name}"
-    if person.url:
-        return f"{prefix}[{person.name}]({person.url})"
-    return f"{prefix}{person.name}"
+    # Insert missing JSON-LD-backed fields before the first preserved subsection such as Proposed Schedule.
+    missing_blocks: list[str] = []
+    for name in KNOWN_FIELDS:
+        if name not in seen:
+            rendered = render_field(name, meta, [])
+            if rendered:
+                missing_blocks.extend(rendered)
+    if missing_blocks:
+        # Place missing metadata immediately after the heading if no known fields were present,
+        # otherwise after the last rendered known field by appending before the rest is acceptable.
+        merged_lines = heading + missing_blocks + merged_lines[len(heading):]
 
-
-def render_lia_lesson_overview(meta: CourseMetadata) -> str:
-    lines: list[str] = []
-    lines += ["Lesson overview", "----------------", "> "]
-    if meta.license_url:
-        lines += [f"> **License:** [Creative Commons Attribution 4.0 International License]({meta.license_url})", ">"]
-    if meta.audience:
-        lines += [f"> **Target Audience:** {', '.join(meta.audience)}", ">"]
-    if meta.educational_level:
-        lines += [f"> **Level:** {meta.educational_level}", ">"]
-    if meta.prerequisites:
-        lines += ["> **Prerequisites**", "> To be able to follow this course, learners should have knowledge in:", ">"]
-        lines += markdown_list(meta.prerequisites, quote=True)
-        lines += [">"]
-    if meta.description:
-        lines += ["> **Description**"]
-        for paragraph in re.split(r"\n\s*\n|\n", meta.description.strip()):
-            if paragraph.strip():
-                lines += [f"> {paragraph.strip()}"]
-        lines += [">"]
-    if meta.teaches:
-        lines += ["> **Learning Outcomes:**", "> By the end of the course, learners will be able to:", ">"]
-        lines += markdown_list(meta.teaches, quote=True)
-        lines += [">"]
-    if meta.duration:
-        lines += [f"> **Time estimation**: {meta.duration}", ">"]
-    if meta.materials_url:
-        lines += ["> **Supporting Materials**:", ">", f"> 1. [Course materials]({meta.materials_url})", ">"]
-    if meta.location or meta.start_date:
-        lines += ["> **Course instance:**"]
-        if meta.start_date:
-            lines += [f"> Date: {meta.start_date}"]
-        if meta.location:
-            lines += [f"> Location: {meta.location}"]
-        lines += [">"]
-    if meta.authors or meta.contributors:
-        lines += ["## Authors and Contributors", "", "Authors", ""]
-        lines += [render_person(p, quote=True) for p in meta.authors]
-        if meta.contributors:
-            lines += [">", "Contributors", ">"]
-            lines += [render_person(p, quote=True) for p in meta.contributors]
-    return "\n".join(lines).rstrip() + "\n"
-
-
-def url_or_blank(value: str) -> str:
-    return value or ""
+    new_section = "\n".join(merged_lines).rstrip() + "\n\n"
+    return readme[:start] + new_section + readme[end:]
 
 
 def person_to_jsonld(person: Person) -> dict[str, str]:
@@ -553,15 +481,21 @@ def person_to_jsonld(person: Person) -> dict[str, str]:
     return obj
 
 
-def render_jsonld_block(meta: CourseMetadata) -> str:
-    data: dict[str, Any] = {
+def merge_jsonld_objects(existing: dict[str, Any], meta: CourseMetadata) -> dict[str, Any]:
+    result = dict(existing) if existing else {}
+    defaults = {
         "@context": "https://schema.org/",
         "@type": "LearningResource",
-        "@id": meta.materials_url or meta.source_url,
         "http://purl.org/dc/terms/conformsTo": {
             "@type": "CreativeWork",
             "@id": "https://bioschemas.org/profiles/TrainingMaterial/1.0-RELEASE",
         },
+    }
+    for key, value in defaults.items():
+        result.setdefault(key, value)
+
+    updates: dict[str, Any] = {
+        "@id": meta.materials_url or meta.source_url,
         "description": meta.description,
         "keywords": ", ".join(meta.keywords),
         "name": meta.name,
@@ -571,110 +505,102 @@ def render_jsonld_block(meta: CourseMetadata) -> str:
         "teaches": meta.teaches,
         "audience": ", ".join(meta.audience),
         "inLanguage": meta.language,
-        "learningResourceType": meta.learning_resource_type,
-        "author": [person_to_jsonld(p) for p in meta.authors],
-        "contributor": [person_to_jsonld(p) for p in meta.contributors],
+        "learningResourceType": result.get("learningResourceType") or ["tutorial"],
+        "author": [person_to_jsonld(p) for p in meta.authors] or result.get("author"),
+        "contributor": [person_to_jsonld(p) for p in meta.contributors] or result.get("contributor"),
     }
-    if meta.start_date or meta.location or meta.trainers:
-        data["hasCourseInstance"] = {
-            "@type": "CourseInstance",
-            "startDate": meta.start_date,
-            "endDate": meta.end_date,
-            "location": meta.location,
-            "instructor": [person_to_jsonld(p) for p in meta.trainers],
-        }
-    # Drop empty values but keep empty lists where they are semantically useful? No.
-    data = {k: v for k, v in data.items() if v not in ("", [], None)}
-    return "```json\n@JSONLD " + json.dumps(data, ensure_ascii=False, indent=2) + "\n```\n"
+    for key, value in updates.items():
+        if value not in ("", [], None):
+            result[key] = value
+    return {k: v for k, v in result.items() if v not in ("", [], None)}
 
 
-def replace_or_insert_title(readme_text: str, title: str) -> str:
+def replace_or_append_lia_jsonld(readme: str, new_obj: dict[str, Any]) -> str:
+    block = "```json\n@JSONLD " + json.dumps(new_obj, ensure_ascii=False, indent=2) + "\n```"
+    pattern = re.compile(r"(?ms)^```json\s*\n@JSONLD\s*\{.*?\}\s*\n```\s*$")
+    if pattern.search(readme):
+        return pattern.sub(block, readme, count=1)
+    return readme.rstrip() + "\n\n" + block + "\n"
+
+
+def update_title(readme: str, title: str) -> str:
     if not title:
-        return readme_text
-    # Allow an opening LiaScript comment before the first H1.
-    return re.sub(r"(?m)^#\s+.+$", f"# {title}", readme_text, count=1)
+        return readme
+    return re.sub(r"(?m)^#\s+.+$", f"# {title}", readme, count=1)
 
 
-def replace_lesson_overview(readme_text: str, meta: CourseMetadata) -> str:
-    block = render_lia_lesson_overview(meta)
-    pattern = re.compile(
-        r"(?ms)^Lesson overview\s*\n[-=]+\s*\n.*?(?=^## Proposed Schedule\s*$|^# Workshop and Material organization\s*$|^## Chapters List\s*$|^#\s+)",
-    )
-    if pattern.search(readme_text):
-        return pattern.sub(block + "\n", readme_text, count=1)
+def merge_missing_from_existing(meta: CourseMetadata, existing_jsonld: dict[str, Any]) -> CourseMetadata:
+    # Preserve valid existing README JSON-LD values where the remote object has no value.
+    if not meta.name:
+        meta.name = first_text(existing_jsonld.get("name"))
+    if not meta.description:
+        meta.description = first_text(existing_jsonld.get("description"))
+    if not meta.keywords:
+        meta.keywords = keywords(existing_jsonld.get("keywords"))
+    if not meta.audience:
+        meta.audience = audience_values(existing_jsonld.get("audience"))
+    if not meta.educational_level:
+        meta.educational_level = first_text(existing_jsonld.get("educationalLevel"))
+    if not meta.prerequisites:
+        prereq = existing_jsonld.get("competencyRequired")
+        meta.prerequisites = text_list(prereq)
+    if not meta.teaches:
+        meta.teaches = text_list(existing_jsonld.get("teaches"))
+    if not meta.license_url:
+        meta.license_url = first_text(existing_jsonld.get("license"))
+    if not meta.language:
+        meta.language = first_text(existing_jsonld.get("inLanguage"))
+    if not meta.authors:
+        meta.authors = person_list(existing_jsonld.get("author"))
+    if not meta.contributors:
+        meta.contributors = person_list(existing_jsonld.get("contributor"))
+    return meta
 
-    # If no lesson overview exists, insert after first H1.
-    h1 = re.search(r"(?m)^#\s+.+$", readme_text)
-    if h1:
-        insert_at = h1.end()
-        return readme_text[:insert_at] + "\n\n" + block + readme_text[insert_at:]
-    return block + "\n" + readme_text
 
-
-def replace_jsonld_block(readme_text: str, meta: CourseMetadata) -> str:
-    block = render_jsonld_block(meta)
-    pattern = re.compile(r"(?ms)^```json\s*\n@JSONLD\s*\{.*?^```\s*$")
-    if pattern.search(readme_text):
-        return pattern.sub(block.rstrip(), readme_text, count=1)
-    return readme_text.rstrip() + "\n\n" + block
-
-
-def update_lia_readme(readme_text: str, meta: CourseMetadata, update_jsonld: bool = True) -> str:
-    text = replace_or_insert_title(readme_text, meta.name)
-    text = replace_lesson_overview(text, meta)
+def update_readme(readme: str, meta: CourseMetadata, update_jsonld: bool = True) -> str:
+    existing_jsonld = parse_embedded_lia_jsonld(readme)
+    meta = merge_missing_from_existing(meta, existing_jsonld)
+    updated = update_title(readme, meta.name)
+    updated = merge_lesson_overview(updated, meta)
     if update_jsonld:
-        text = replace_jsonld_block(text, meta)
-    return text
-
-
-def find_first_url(text: str) -> str:
-    urls = re.findall(r"https?://[^\s)>'\"]+", text)
-    if not urls:
-        return ""
-    return next((u for u in urls if "training.vib.be/all-trainings" in u), urls[0])
+        merged_jsonld = merge_jsonld_objects(existing_jsonld, meta)
+        updated = replace_or_append_lia_jsonld(updated, merged_jsonld)
+    return updated
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Update a LiaScript README from a course page.")
-    parser.add_argument("--url", help="Course URL. If omitted, a URL is detected from the README.")
-    parser.add_argument("--readme", default="README.md")
-    parser.add_argument("--output")
-    parser.add_argument("--debug-html", help="Save fetched HTML for inspection.")
-    parser.add_argument("--allow-body-jsonld", action="store_true")
-    parser.add_argument("--no-html-fallback", action="store_true")
-    parser.add_argument("--no-jsonld-update", action="store_true", help="Do not update/insert the LiaScript @JSONLD block.")
-    parser.add_argument("--dry-run", action="store_true")
+    parser = argparse.ArgumentParser(description="Merge course URL JSON-LD metadata into a LiaScript README lesson overview.")
+    parser.add_argument("--readme", default="README.md", help="README file to update")
+    parser.add_argument("--url", help="Course URL. If omitted, courseURL is read from README.")
+    parser.add_argument("--output", help="Optional output file. Defaults to overwriting --readme.")
+    parser.add_argument("--dry-run", action="store_true", help="Print updated README instead of writing it")
+    parser.add_argument("--debug-html", help="Optional path to save fetched HTML for debugging")
+    parser.add_argument("--no-jsonld-update", action="store_true", help="Do not update the embedded LiaScript @JSONLD block")
     args = parser.parse_args()
 
     readme_path = Path(args.readme)
-    readme_text = readme_path.read_text(encoding="utf-8")
-    url = args.url or find_first_url(readme_text)
-    if not url:
-        raise ValueError("No --url supplied and no URL detected in README.")
+    readme = readme_path.read_text(encoding="utf-8")
+    course_url = args.url or extract_course_url(readme)
+    if not course_url:
+        raise ValueError("No course URL provided and no courseURL found in README.")
 
-    html_text = fetch_html(url)
+    html_text = fetch_html(course_url)
     if args.debug_html:
         Path(args.debug_html).write_text(html_text, encoding="utf-8")
 
-    objects = parse_jsonld_blocks(jsonld_blocks_from_html(html_text, prefer_head=not args.allow_body_jsonld))
-    if objects:
-        meta = metadata_from_jsonld(objects, url)
-        source = "JSON-LD"
-    elif not args.no_html_fallback:
-        meta = metadata_from_html(html_text, url)
-        source = "HTML fallback"
-    else:
-        raise ValueError("No parseable JSON-LD found in the fetched HTML.")
+    objects = parse_jsonld_blocks(jsonld_blocks_from_html(html_text))
+    if not objects:
+        raise ValueError("No parseable JSON-LD found at the courseURL. Use --debug-html to inspect the fetched HTML.")
 
-    meta = merge_missing_metadata(meta, readme_text)
-    updated = update_lia_readme(readme_text, meta, update_jsonld=not args.no_jsonld_update)
+    meta = metadata_from_jsonld(objects, course_url)
+    updated = update_readme(readme, meta, update_jsonld=not args.no_jsonld_update)
 
     if args.dry_run:
         print(updated)
     else:
-        output_path = Path(args.output) if args.output else readme_path
-        output_path.write_text(updated, encoding="utf-8")
-        print(f"Updated {output_path} from {source} at {url} using LiaScript template style")
+        output = Path(args.output) if args.output else readme_path
+        output.write_text(updated, encoding="utf-8")
+        print(f"Updated {output} by merging Lesson overview with JSON-LD from {course_url}")
     return 0
 
 
