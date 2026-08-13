@@ -17,7 +17,6 @@ on:
 
 permissions:
   contents: write
-  pull-requests: write
 
 jobs:
   update-readme:
@@ -60,14 +59,14 @@ jobs:
       - name: Show README changes
         run: git diff -- README.md
 
-      - name: Create pull request if README changed
-        uses: peter-evans/create-pull-request@v6
-        with:
-          commit-message: "Update README metadata from course page"
-          title: "Update README metadata from course page"
-          body: |
-            This automated PR updates README.md by fetching the course page HTML.
-            The script first attempts to extract JSON-LD from the page header and,
-            if no JSON-LD is present, falls back to parsing the visible HTML sections.
-          branch: "automation/update-readme-jsonld"
-          delete-branch: true
+      - name: Commit and push README changes if any
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet -- README.md; then
+            echo "No changes to README.md, skipping commit."
+          else
+            git add README.md
+            git commit -m "Update README metadata from course page"
+            git push origin HEAD:${{ github.ref_name }}
+          fi
