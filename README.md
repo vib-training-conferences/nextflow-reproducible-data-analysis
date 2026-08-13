@@ -81,6 +81,7 @@ Lesson overview
 > During the training, you will learn to develop and run pipelines on local machines, HPC clusters, and cloud platforms. Starting with the basics, the course guides you through creating a simple pipeline and enhancing it with Nextflow’s modern DSL2 syntax. 
 >
 >This repository contains the materials (exercises) for the workshop on Nextflow on 4-5 June 2026.
+> 
 >The **presentations** which goes alongside this material can be found [in the Lesson overview: Slides](#2) .
 >
 > <i class="fa fa-arrow-right"></i> **Learning Outcomes:**
