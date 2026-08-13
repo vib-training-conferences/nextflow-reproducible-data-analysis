@@ -61,6 +61,7 @@ jobs:
       - name: Create Pull Request for README changes
         uses: peter-evans/create-pull-request@v6
         with:
+          token: ${{ secrets.PAT_TOKEN }}
           commit-message: "Update LiaScript README metadata from course page"
           title: "Update LiaScript README metadata from course page"
           body: |
