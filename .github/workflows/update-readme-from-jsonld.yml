@@ -69,7 +69,7 @@ jobs:
 
             - Source: `scripts/update_readme_from_jsonld.py`
             - Trigger: `${{ github.workflow }}`
-          branch: main
+          branch: chore/update-readme-from-jsonld-${{ github.run_id }}
           delete-branch: true
           add-paths: README.md
           labels: automation
