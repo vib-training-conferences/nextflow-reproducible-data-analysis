@@ -8,7 +8,6 @@ on:
         required: false
         default: ""
   schedule:
-    # Weekly on Monday at 06:00 UTC
     - cron: "0 6 * * 1"
   push:
     paths:
@@ -23,7 +22,6 @@ permissions:
 jobs:
   update-readme:
     runs-on: ubuntu-latest
-
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -38,17 +36,19 @@ jobs:
           COURSE_URL: ${{ github.event.inputs.course_url }}
         run: |
           set -euo pipefail
-
           if [ -n "${COURSE_URL:-}" ]; then
-            python scripts/update_readme_from_jsonld.py \
-              --url "$COURSE_URL" \
-              --readme README.md \
-              --marker-mode append
+            python scripts/update_readme_from_jsonld.py --url "$COURSE_URL" --readme README.md --marker-mode append --debug-html fetched-course-page.html
           else
-            python scripts/update_readme_from_jsonld.py \
-              --readme README.md \
-              --marker-mode append
+            python scripts/update_readme_from_jsonld.py --readme README.md --marker-mode append --debug-html fetched-course-page.html
           fi
+
+      - name: Upload fetched HTML for debugging if workflow failed
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fetched-course-page
+          path: fetched-course-page.html
+          if-no-files-found: ignore
 
       - name: Show README changes
         run: git diff -- README.md
