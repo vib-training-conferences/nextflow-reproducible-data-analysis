@@ -1,24 +1,66 @@
-name: Update README from HTML JSON-LD
+name: Update README from course JSON-LD
 
 on:
   workflow_dispatch:
     inputs:
       course_url:
-        required: true
-        description: Course page URL
+        description: "Course page URL containing JSON-LD in the HTML header. Leave empty to detect a URL from README.md."
+        required: false
+        default: ""
+  schedule:
+    # Weekly on Monday at 06:00 UTC
+    - cron: "0 6 * * 1"
+  push:
+    paths:
+      - "README.md"
+      - "scripts/update_readme_from_jsonld.py"
+      - ".github/workflows/update-readme-from-jsonld.yml"
+
+permissions:
+  contents: write
+  pull-requests: write
 
 jobs:
-  update:
+  update-readme:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
-      - name: Update README
+          python-version: "3.12"
+
+      - name: Update README from JSON-LD in HTML header
+        env:
+          COURSE_URL: ${{ github.event.inputs.course_url }}
         run: |
-          python scripts/update_readme_from_jsonld.py             --url "${{ github.event.inputs.course_url }}"             --readme README.md
-      - uses: peter-evans/create-pull-request@v6
+          set -euo pipefail
+
+          if [ -n "${COURSE_URL:-}" ]; then
+            python scripts/update_readme_from_jsonld.py \
+              --url "$COURSE_URL" \
+              --readme README.md \
+              --marker-mode append
+          else
+            python scripts/update_readme_from_jsonld.py \
+              --readme README.md \
+              --marker-mode append
+          fi
+
+      - name: Show README changes
+        run: git diff -- README.md
+
+      - name: Create pull request if README changed
+        uses: peter-evans/create-pull-request@v6
         with:
-          commit-message: Update README from JSON-LD
-          title: Update README from JSON-LD
+          commit-message: "Update README metadata from course JSON-LD"
+          title: "Update README metadata from course JSON-LD"
+          body: |
+            This automated PR updates README.md by fetching the course page HTML,
+            extracting JSON-LD from the HTML header, and mapping the course metadata
+            into the README template.
+          branch: "automation/update-readme-jsonld"
+          delete-branch: true
