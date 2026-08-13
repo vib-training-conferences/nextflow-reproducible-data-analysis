@@ -531,11 +531,19 @@ def update_readme(text: str, meta: CourseMetadata, marker_mode: str) -> str:
     return text.rstrip() + "\n\n" + block
 
 
+COURSE_URL_PATTERNS = [
+    "training.vib.be/all-trainings",
+    "vibtrainingandconferences.be/training/",
+]
+
+
 def find_first_url(text: str) -> str:
     urls = re.findall(r"https?://[^\s)>'\"]+", text)
-    if not urls:
-        return ""
-    return next((u for u in urls if "training.vib.be/all-trainings" in u), urls[0])
+    for pattern in COURSE_URL_PATTERNS:
+        match = next((u for u in urls if pattern in u), "")
+        if match:
+            return match
+    return ""
 
 
 def main() -> int:
@@ -554,7 +562,8 @@ def main() -> int:
     readme_text = readme_path.read_text(encoding="utf-8")
     url = args.url or find_first_url(readme_text)
     if not url:
-        raise ValueError("No --url supplied and no URL detected in README.")
+        print("No --url supplied and no course URL detected in README. Skipping update.", file=sys.stderr)
+        return 0
 
     html_text = fetch_html(url)
     if args.debug_html:
