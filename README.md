@@ -64,39 +64,30 @@ courseURL: https://training.vib.be/all-trainings/nextflow-reproducible-and-autom
 
 Lesson overview
 ----------------
-
-<!-- COURSE_METADATA_START -->
-## Course metadata
-
-**Title:** Nextflow for reproducible and automated data analysis
-
-**Description**
-This hands-on course introduces the principles and practice of building scalable and reproducible data analysis pipelines using Nextflow. As bioinformatics data volumes increase and analyses become more complex, workflow management tools play a key role in ensuring reproducibility and efficiency. During the training, you will learn to develop and run pipelines on local machines, HPC clusters, and cloud platforms. Starting with the basics, the course guides you through creating a simple pipeline and enhancing it with Nextflow’s modern DSL2 syntax.
-
-**Learning Outcomes:**
-By the end of the course, learners will be able to:
-1. “Describe the core components of Nextflow (channels processes modules workflows)”
-2. “Explain their roles of each component in the pipeline development and reproducibility aspect”
-3. “Construct a basic Nextflow pipeline using DSL2 syntax and execute it on a local machine”
-4. “Modify configuration files to adapt pipeline parameters for different computing environments (local cluster cloud)”
-5. “Apply best practices for reproducibility and scalability in workflow design”
-6. “Debug and refactor a simple pipeline to improve clarity modularity and performance”
-
-**Date:** 2026-12-07 to 2026-12-08
-**Location:** Ghent - VIB/UGent FSVM II, Technologiepark 75, Zwijnaarde, 9052, BE
-**Language:** en-GB
-**Keywords:** advanced bioinformatics, ELIXIR, programming, research data management
-
-**Supporting Materials:**
-1. [Course materials](https://github.com/vib-tcp/nextflow-workshop)
-
-**Trainers:**
-- [Kobe Lavaerts](https://orcid.org/0000-0003-0490-5969)
-- [Maria Tsontaki](https://orcid.org/0009-0003-8414-6241)
-- [Nicolas Vannieuwkerke](https://orcid.org/0009-0003-5619-1555)
-
-_Metadata source: https://training.vib.be/all-trainings/nextflow-reproducible-and-automated-data-analysis-7_
-<!-- COURSE_METADATA_END -->
+> 
+> **License:** [Creative Commons Attribution 4.0 International License](https://creativecommons.org/licenses/by/4.0/)
+>
+> **Description**
+> This hands-on course introduces the principles and practice of building scalable and reproducible data analysis pipelines using Nextflow. As bioinformatics data volumes increase and analyses become more complex, workflow management tools play a key role in ensuring reproducibility and efficiency. During the training, you will learn to develop and run pipelines on local machines, HPC clusters, and cloud platforms. Starting with the basics, the course guides you through creating a simple pipeline and enhancing it with Nextflow’s modern DSL2 syntax.
+>
+> **Learning Outcomes:**
+> By the end of the course, learners will be able to:
+>
+> 1. “Describe the core components of Nextflow (channels processes modules workflows)”
+> 2. “Explain their roles of each component in the pipeline development and reproducibility aspect”
+> 3. “Construct a basic Nextflow pipeline using DSL2 syntax and execute it on a local machine”
+> 4. “Modify configuration files to adapt pipeline parameters for different computing environments (local cluster cloud)”
+> 5. “Apply best practices for reproducibility and scalability in workflow design”
+> 6. “Debug and refactor a simple pipeline to improve clarity modularity and performance”
+>
+> **Supporting Materials**:
+>
+> 1. [Course materials](https://github.com/vib-tcp/nextflow-workshop)
+>
+> **Course instance:**
+> Date: 2026-12-07
+> Location: Ghent - VIB/UGent FSVM II, Technologiepark 75, Zwijnaarde, 9052, BE
+>
 
 # Workshop and Material organization
 
@@ -2768,5 +2759,56 @@ There are a few things left that you can implement in your pipeline so others ca
       "name": "Tuur Muyldermans"
     }
   ]
+}
+```
+
+```json
+@JSONLD {
+  "@context": "https://schema.org/",
+  "@type": "LearningResource",
+  "@id": "https://github.com/vib-tcp/nextflow-workshop",
+  "http://purl.org/dc/terms/conformsTo": {
+    "@type": "CreativeWork",
+    "@id": "https://bioschemas.org/profiles/TrainingMaterial/1.0-RELEASE"
+  },
+  "description": "This hands-on course introduces the principles and practice of building scalable and reproducible data analysis pipelines using Nextflow. As bioinformatics data volumes increase and analyses become more complex, workflow management tools play a key role in ensuring reproducibility and efficiency. During the training, you will learn to develop and run pipelines on local machines, HPC clusters, and cloud platforms. Starting with the basics, the course guides you through creating a simple pipeline and enhancing it with Nextflow’s modern DSL2 syntax.",
+  "keywords": "advanced bioinformatics, ELIXIR, programming, research data management",
+  "name": "Nextflow for reproducible and automated data analysis",
+  "license": "https://creativecommons.org/licenses/by/4.0/",
+  "teaches": [
+    "“Describe the core components of Nextflow (channels processes modules workflows)”",
+    "“Explain their roles of each component in the pipeline development and reproducibility aspect”",
+    "“Construct a basic Nextflow pipeline using DSL2 syntax and execute it on a local machine”",
+    "“Modify configuration files to adapt pipeline parameters for different computing environments (local cluster cloud)”",
+    "“Apply best practices for reproducibility and scalability in workflow design”",
+    "“Debug and refactor a simple pipeline to improve clarity modularity and performance”"
+  ],
+  "inLanguage": "en-GB",
+  "learningResourceType": [
+    "tutorial"
+  ],
+  "hasCourseInstance": {
+    "@type": "CourseInstance",
+    "startDate": "2026-12-07",
+    "endDate": "2026-12-08",
+    "location": "Ghent - VIB/UGent FSVM II, Technologiepark 75, Zwijnaarde, 9052, BE",
+    "instructor": [
+      {
+        "@type": "Person",
+        "name": "Kobe Lavaerts",
+        "@id": "https://orcid.org/0000-0003-0490-5969"
+      },
+      {
+        "@type": "Person",
+        "name": "Maria Tsontaki",
+        "@id": "https://orcid.org/0009-0003-8414-6241"
+      },
+      {
+        "@type": "Person",
+        "name": "Nicolas Vannieuwkerke",
+        "@id": "https://orcid.org/0009-0003-5619-1555"
+      }
+    ]
+  }
 }
 ```
