@@ -125,7 +125,7 @@ Lesson overview
 >
 > <i class="fa fa-anchor"></i> **PURL**: 
 >
->[<img src="https://doi.org/10.5281/zenodo.19021095" width="50"/>](https://zenodo.org/records/19021095)
+>[<img src="https://zenodo.org/badge/DOI/10.5281/zenodo.19021095.svg" width="50"/>](https://zenodo.org/records/19021095)
 >
 > ## Authors and Contributors
 >
