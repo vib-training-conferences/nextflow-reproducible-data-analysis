@@ -56,12 +56,15 @@ edition:  6th
 
 -->
 
+
 # Nextflow for reproducible and automated data analysis
 
 <img src="./docs/img/nextflow/nextflow-logo.png" width="350" align="center"/>
 
 Lesson overview
 ----------------
+
+<!-- COURSE_METADATA_START -->
 
 > <i class="fa fa-lock"></i> **License:** [Creative Commons Attribution 4.0 International  License](https://creativecommons.org/licenses/by/4.0/deed.en)
 >
@@ -163,6 +166,8 @@ Lesson overview
 >| 4     | [Configuration files](#configuration-files)  |
 >| 5     | [Creating reports](#creating-reports)  |
 >| 6     | [Project](#project)  |
+
+<!-- COURSE_METADATA_END -->
 
 # Workshop and Material organization
 
