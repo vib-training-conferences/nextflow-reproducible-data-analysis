@@ -1,4 +1,4 @@
-name: Update README from course JSON-LD
+name: Update LiaScript README from course page
 
 on:
   workflow_dispatch:
@@ -17,6 +17,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   update-readme:
@@ -30,7 +31,7 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Update README from JSON-LD or HTML fallback
+      - name: Update LiaScript README from course page
         env:
           COURSE_URL: ${{ github.event.inputs.course_url }}
         run: |
@@ -39,12 +40,10 @@ jobs:
             python scripts/update_readme_from_jsonld.py \
               --url "$COURSE_URL" \
               --readme README.md \
-              --marker-mode append \
               --debug-html fetched-course-page.html
           else
             python scripts/update_readme_from_jsonld.py \
               --readme README.md \
-              --marker-mode append \
               --debug-html fetched-course-page.html
           fi
 
@@ -59,14 +58,14 @@ jobs:
       - name: Show README changes
         run: git diff -- README.md
 
-      - name: Commit and push README changes if any
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          if git diff --quiet -- README.md; then
-            echo "No changes to README.md, skipping commit."
-          else
-            git add README.md
-            git commit -m "Update README metadata from course page"
-            git push origin HEAD:${{ github.ref_name }}
-          fi
+      - name: Create pull request if README changed
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "Update LiaScript README metadata from course page"
+          title: "Update LiaScript README metadata from course page"
+          body: |
+            This automated PR updates README.md using the existing LiaScript markdown dialect.
+            The script first attempts to extract JSON-LD from the course page and falls back
+            to parsing visible HTML sections if JSON-LD is not present in the fetched page.
+          branch: "automation/update-liasiscript-readme"
+          delete-branch: true
