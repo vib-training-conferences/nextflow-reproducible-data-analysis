@@ -53,6 +53,7 @@ orcid:    [@0](@1)<!--class="orcid-logo-for-author-list"-->
 
 tutor:    Introduction to Nextflow
 edition:  6th
+courseURL: https://training.vib.be/all-trainings/nextflow-reproducible-and-automated-data-analysis-7
 
 -->
 
