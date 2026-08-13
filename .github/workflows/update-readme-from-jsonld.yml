@@ -57,14 +57,77 @@ jobs:
       - name: Show README changes
         run: git diff -- README.md
 
-      - name: Commit and push README changes if any
+name: Update LiaScript README from course page
+
+on:
+  workflow_dispatch:
+    inputs:
+      course_url:
+        description: "Course page URL. Leave empty to detect a URL from README.md."
+        required: false
+        default: ""
+  schedule:
+    - cron: "0 6 * * 1"
+  push:
+    paths:
+      - "README.md"
+      - "scripts/update_readme_from_jsonld.py"
+      - ".github/workflows/update-readme-from-jsonld.yml"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Update LiaScript README from course page
+        env:
+          COURSE_URL: ${{ github.event.inputs.course_url }}
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          if ! git diff --quiet -- README.md; then
-            git add README.md
-            git commit -m "Update LiaScript README metadata from course page"
-            git push
+          set -euo pipefail
+          if [ -n "${COURSE_URL:-}" ]; then
+            python scripts/update_readme_from_jsonld.py \
+              --url "$COURSE_URL" \
+              --readme README.md \
+              --debug-html fetched-course-page.html
           else
-            echo "No changes to README.md, skipping commit."
+            python scripts/update_readme_from_jsonld.py \
+              --readme README.md \
+              --debug-html fetched-course-page.html
           fi
+
+      - name: Upload fetched HTML for debugging
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fetched-course-page
+          path: fetched-course-page.html
+          if-no-files-found: ignore
+
+      - name: Show README changes
+        run: git diff -- README.md
+
+      - name: Create Pull Request for README changes
+        uses: peter-evans/create-pull-request@v6
+        with:
+          commit-message: "Update LiaScript README metadata from course page"
+          title: "Update LiaScript README metadata from course page"
+          body: |
+            This PR updates `README.md` using metadata fetched from the configured course page.
+
+            - Source: `scripts/update_readme_from_jsonld.py`
+            - Trigger: `${{ github.workflow }}`
+          branch: chore/update-readme-from-jsonld
+          delete-branch: true
+          add-paths: README.md
+          labels: automation
