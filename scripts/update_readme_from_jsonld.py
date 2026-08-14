@@ -46,6 +46,8 @@ KNOWN_FIELDS = [
 
 @dataclass
 class Person:
+    """Normalized person metadata extracted from JSON-LD."""
+
     name: str
     url: str = ""
     orcid: str = ""
@@ -53,6 +55,8 @@ class Person:
 
 @dataclass
 class CourseMetadata:
+    """Internal representation of course fields used to update the README."""
+
     source_url: str
     name: str = ""
     description: str = ""
@@ -70,13 +74,19 @@ class CourseMetadata:
 
 
 class JsonLdHTMLParser(HTMLParser):
+    """Collect raw JSON-LD payloads from script tags in an HTML document."""
+
     def __init__(self) -> None:
+        """Initialize parser state for the current JSON-LD block and all matches."""
+
         super().__init__(convert_charrefs=True)
         self.in_jsonld = False
         self.current: list[str] = []
         self.blocks: list[str] = []
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        """Start collecting data when encountering a JSON-LD script tag."""
+
         if tag.lower() != "script":
             return
         attr = {k.lower(): (v or "") for k, v in attrs}
@@ -86,10 +96,14 @@ class JsonLdHTMLParser(HTMLParser):
             self.current = []
 
     def handle_data(self, data: str) -> None:
+        """Append script contents while inside a JSON-LD block."""
+
         if self.in_jsonld:
             self.current.append(data)
 
     def handle_endtag(self, tag: str) -> None:
+        """Finalize and store the current JSON-LD block at the closing script tag."""
+
         if tag.lower() == "script" and self.in_jsonld:
             block = "".join(self.current).strip()
             if block:
@@ -99,6 +113,8 @@ class JsonLdHTMLParser(HTMLParser):
 
 
 def fetch_html(url: str, timeout: int = 30) -> str:
+    """Download the remote course page and decode it to text."""
+
     req = Request(
         url,
         headers={
@@ -112,6 +128,8 @@ def fetch_html(url: str, timeout: int = 30) -> str:
 
 
 def jsonld_blocks_from_html(text: str) -> list[str]:
+    """Extract raw JSON-LD script bodies from an HTML document."""
+
     parser = JsonLdHTMLParser()
     parser.feed(text)
     if parser.blocks:
@@ -125,6 +143,8 @@ def jsonld_blocks_from_html(text: str) -> list[str]:
 
 
 def parse_jsonld_blocks(blocks: Iterable[str]) -> list[Any]:
+    """Parse extracted JSON-LD strings into Python objects, skipping invalid blocks."""
+
     out: list[Any] = []
     for block in blocks:
         block = html.unescape(block.strip())
@@ -139,6 +159,8 @@ def parse_jsonld_blocks(blocks: Iterable[str]) -> list[Any]:
 
 
 def parse_embedded_lia_jsonld(readme: str) -> dict[str, Any]:
+    """Read the existing LiaScript @JSONLD block from the README if present."""
+
     # Supports the common LiaScript style:
     # ```json
     # @JSONLD { ... }
@@ -153,17 +175,23 @@ def parse_embedded_lia_jsonld(readme: str) -> dict[str, Any]:
 
 
 def as_list(value: Any) -> list[Any]:
+    """Normalize a scalar or null JSON-LD value into a list."""
+
     if value is None or value == "":
         return []
     return value if isinstance(value, list) else [value]
 
 
 def clean_text(value: Any) -> str:
+    """Strip HTML markup and collapse whitespace in a free-text value."""
+
     value = re.sub(r"<[^>]+>", " ", str(value or ""))
     return re.sub(r"\s+", " ", html.unescape(value)).strip()
 
 
 def unique(items: Iterable[str]) -> list[str]:
+    """Return cleaned strings in first-seen order without duplicates."""
+
     out: list[str] = []
     for item in items:
         item = clean_text(item)
@@ -173,6 +201,8 @@ def unique(items: Iterable[str]) -> list[str]:
 
 
 def text_list(value: Any) -> list[str]:
+    """Convert mixed JSON-LD values into a normalized list of display strings."""
+
     values: list[str] = []
     for item in as_list(value):
         if isinstance(item, dict):
@@ -182,6 +212,8 @@ def text_list(value: Any) -> list[str]:
 
 
 def first_text(*values: Any) -> str:
+    """Return the first non-empty text extracted from the given candidate values."""
+
     for value in values:
         items = text_list(value)
         if items:
@@ -190,6 +222,8 @@ def first_text(*values: Any) -> str:
 
 
 def flatten_jsonld(node: Any) -> Iterable[dict[str, Any]]:
+    """Yield JSON-LD objects recursively from common nested graph structures."""
+
     if isinstance(node, list):
         for item in node:
             yield from flatten_jsonld(item)
@@ -201,10 +235,14 @@ def flatten_jsonld(node: Any) -> Iterable[dict[str, Any]]:
 
 
 def type_names(item: dict[str, Any]) -> set[str]:
+    """Return the lower-cased set of JSON-LD type names for an object."""
+
     return {str(t).lower() for t in as_list(item.get("@type"))}
 
 
 def score_jsonld(item: dict[str, Any], instance: bool = False) -> int:
+    """Score a JSON-LD object by type match and presence of useful course fields."""
+
     wanted = INSTANCE_TYPES if instance else COURSE_TYPES
     score = 10 * len(type_names(item) & wanted)
     for key in ["name", "description", "teaches", "learningOutcome", "audience", "educationalLevel", "competencyRequired", "license", "author", "contributor"]:
@@ -214,6 +252,8 @@ def score_jsonld(item: dict[str, Any], instance: bool = False) -> int:
 
 
 def select_course_and_instance(objects: list[Any]) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Choose the best course object and optional instance/event object from JSON-LD."""
+
     flat = [x for obj in objects for x in flatten_jsonld(obj) if isinstance(x, dict)]
     courses = [x for x in flat if type_names(x) & COURSE_TYPES]
     if not courses:
@@ -229,6 +269,8 @@ def select_course_and_instance(objects: list[Any]) -> tuple[dict[str, Any], dict
 
 
 def person_list(value: Any) -> list[Person]:
+    """Normalize author or contributor values into deduplicated Person entries."""
+
     people: list[Person] = []
     for item in as_list(value):
         if isinstance(item, dict):
@@ -249,12 +291,16 @@ def person_list(value: Any) -> list[Person]:
 
 
 def keywords(value: Any) -> list[str]:
+    """Normalize keyword values from either a string or list representation."""
+
     if isinstance(value, str):
         return unique(re.split(r"[,;]", value))
     return text_list(value)
 
 
 def audience_values(*values: Any) -> list[str]:
+    """Extract audience labels from plain or structured JSON-LD values."""
+
     out: list[str] = []
     for value in values:
         for item in as_list(value):
@@ -266,6 +312,8 @@ def audience_values(*values: Any) -> list[str]:
 
 
 def metadata_from_jsonld(objects: list[Any], source_url: str) -> CourseMetadata:
+    """Map selected JSON-LD objects into the script's normalized CourseMetadata."""
+
     course, instance = select_course_and_instance(objects)
     prereq = (
         course.get("competencyRequired")
@@ -303,6 +351,8 @@ def metadata_from_jsonld(objects: list[Any], source_url: str) -> CourseMetadata:
 
 
 def extract_course_url(readme: str) -> str:
+    """Find the source course URL from README metadata or the first matching link."""
+
     # Prefer frontmatter/comment key courseURL used by the reference README.
     match = re.search(r"courseURL:\s*(https?://\S+)", readme)
     if match:
@@ -312,6 +362,8 @@ def extract_course_url(readme: str) -> str:
 
 
 def locate_lesson_overview(readme: str) -> tuple[int, int, str]:
+    """Locate the Lesson overview section boundaries within the README text."""
+
     start_match = re.search(r"(?m)^Lesson overview\s*\n[-=]+\s*$", readme)
     if not start_match:
         raise ValueError("Could not find a 'Lesson overview' section in the README.")
@@ -328,6 +380,8 @@ def locate_lesson_overview(readme: str) -> tuple[int, int, str]:
 
 
 def field_name_from_line(line: str) -> str | None:
+    """Recognize a known field label from one quoted README line."""
+
     cleaned = line.strip()
     cleaned = cleaned[1:].strip() if cleaned.startswith(">") else cleaned
     match = re.match(r"\*\*([^*]+?)\*\*\s*:?:?", cleaned)
@@ -341,6 +395,8 @@ def field_name_from_line(line: str) -> str | None:
 
 
 def split_overview_blocks(section: str) -> tuple[list[str], list[tuple[str | None, list[str]]]]:
+    """Split the Lesson overview into its heading and field/content blocks."""
+
     lines = section.splitlines()
     # Keep the heading lines untouched.
     heading: list[str] = []
@@ -374,14 +430,20 @@ def split_overview_blocks(section: str) -> tuple[list[str], list[tuple[str | Non
 
 
 def quote_line(text: str = "") -> str:
+    """Render a line in the quoted format used by the Lesson overview."""
+
     return ">" if text == "" else f"> {text}"
 
 
 def render_list(items: list[str]) -> list[str]:
+    """Render numbered list items using quoted README lines."""
+
     return [quote_line(f"{i}. {item}") for i, item in enumerate(items, 1)]
 
 
 def render_field(name: str, meta: CourseMetadata, existing_block: list[str] | None = None) -> list[str]:
+    """Render one known overview field from metadata, or keep the existing block."""
+
     # If JSON-LD has no value for this field, preserve the existing block exactly.
     existing_block = existing_block or []
     if name == "License":
@@ -444,6 +506,8 @@ def render_field(name: str, meta: CourseMetadata, existing_block: list[str] | No
 
 
 def merge_lesson_overview(readme: str, meta: CourseMetadata) -> str:
+    """Rewrite only known Lesson overview fields while preserving other content."""
+
     start, end, section = locate_lesson_overview(readme)
     heading, blocks = split_overview_blocks(section)
 
@@ -473,6 +537,8 @@ def merge_lesson_overview(readme: str, meta: CourseMetadata) -> str:
 
 
 def person_to_jsonld(person: Person) -> dict[str, str]:
+    """Convert a Person record back into a minimal JSON-LD Person object."""
+
     obj = {"@type": "Person", "name": person.name}
     if person.orcid:
         obj["@id"] = person.orcid
@@ -482,6 +548,8 @@ def person_to_jsonld(person: Person) -> dict[str, str]:
 
 
 def merge_jsonld_objects(existing: dict[str, Any], meta: CourseMetadata) -> dict[str, Any]:
+    """Merge fetched metadata into the existing embedded JSON-LD object."""
+
     result = dict(existing) if existing else {}
     defaults = {
         "@context": "https://schema.org/",
@@ -516,6 +584,8 @@ def merge_jsonld_objects(existing: dict[str, Any], meta: CourseMetadata) -> dict
 
 
 def replace_or_append_lia_jsonld(readme: str, new_obj: dict[str, Any]) -> str:
+    """Replace the existing LiaScript JSON-LD block or append a new one."""
+
     block = "```json\n@JSONLD " + json.dumps(new_obj, ensure_ascii=False, indent=2) + "\n```"
     pattern = re.compile(r"(?ms)^```json\s*\n@JSONLD\s*\{.*?\}\s*\n```\s*$")
     if pattern.search(readme):
@@ -524,12 +594,16 @@ def replace_or_append_lia_jsonld(readme: str, new_obj: dict[str, Any]) -> str:
 
 
 def update_title(readme: str, title: str) -> str:
+    """Update the first top-level README heading when a title is available."""
+
     if not title:
         return readme
     return re.sub(r"(?m)^#\s+.+$", f"# {title}", readme, count=1)
 
 
 def merge_missing_from_existing(meta: CourseMetadata, existing_jsonld: dict[str, Any]) -> CourseMetadata:
+    """Backfill missing fetched metadata with values already stored in the README."""
+
     # Preserve valid existing README JSON-LD values where the remote object has no value.
     if not meta.name:
         meta.name = first_text(existing_jsonld.get("name"))
@@ -558,6 +632,8 @@ def merge_missing_from_existing(meta: CourseMetadata, existing_jsonld: dict[str,
 
 
 def update_readme(readme: str, meta: CourseMetadata, update_jsonld: bool = True) -> str:
+    """Apply all README updates: title, lesson overview, and optional JSON-LD block."""
+
     existing_jsonld = parse_embedded_lia_jsonld(readme)
     meta = merge_missing_from_existing(meta, existing_jsonld)
     updated = update_title(readme, meta.name)
@@ -569,6 +645,8 @@ def update_readme(readme: str, meta: CourseMetadata, update_jsonld: bool = True)
 
 
 def main() -> int:
+    """Parse CLI arguments, fetch metadata, update the README, and write the result."""
+
     parser = argparse.ArgumentParser(description="Merge course URL JSON-LD metadata into a LiaScript README lesson overview.")
     parser.add_argument("--readme", default="README.md", help="README file to update")
     parser.add_argument("--url", help="Course URL. If omitted, courseURL is read from README.")
