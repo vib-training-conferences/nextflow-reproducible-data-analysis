@@ -89,9 +89,10 @@ Lesson overview
 > 5. “Apply best practices for reproducibility and scalability in workflow design”
 > 6. “Debug and refactor a simple pipeline to improve clarity modularity and performance”
 >
-> **Supporting Materials**:
+> **Course Materials**:
 >
-> 1. [Course materials](https://github.com/vib-tcp/nextflow-workshop)
+> 1. [Exercises](./exercises/)
+> 2. [Presentations](link)
 >
 > <i class="fa fa-hourglass"></i> **Time estimation**: 16 hours (2 days)
 >
