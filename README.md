@@ -94,7 +94,7 @@ Lesson overview
 > 1. [Exercises](./exercises/)
 > 2. [Presentation](#2)
 >
-> <i class="fa fa-hourglass"></i> **Time estimation**: 16 hours
+> <i class="fa fa-hourglass"></i> **Time estimation**: 1 day 16 hours
 >
 > <i class="fa fa-asterisk"></i> **Requirements:** The (technical) installation requirements are described in this [file](./docs/installations.md)
 >
