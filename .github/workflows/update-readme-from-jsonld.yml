@@ -71,7 +71,7 @@ jobs:
         if: steps.detect_changes.outputs.has_changes == 'true'
         uses: peter-evans/create-pull-request@v6
         with:
-          token: ${{ secrets.PAT_TOKEN }}
+          token: ${{ github.token }}
           commit-message: "Update LiaScript README metadata from course page"
           title: "Update LiaScript README metadata from course page"
           body: |
