@@ -97,10 +97,6 @@ Lesson overview
 >
 > <i class="fa fa-asterisk"></i> **Requirements:** The (technical) installation requirements are described in this [file](./docs/installations.md)
 >
-> **Supporting Materials**:
->
-> 1. [Course materials](https://github.com/vib-tcp/nextflow-workshop)
->
 > ## Proposed Schedule 
 >
 > |time | Day 1 | Time | Day 2 |
