@@ -396,9 +396,6 @@ def field_name_from_line(line: str) -> str | None:
     # Normalize common variants.
     if name.lower() == "time estimation":
         return "Time estimation"
-    if name.lower() in {"supporting materials", "course materials"}:
-        return "Course Materials"
-    return name
 
 
 def split_overview_blocks(section: str) -> tuple[list[str], list[tuple[str | None, list[str]]]]:
@@ -522,7 +519,7 @@ def render_field(name: str, meta: CourseMetadata, existing_block: list[str] | No
         if not meta.funders:
             return existing_block
         return [decorate_field_line(f"**Funding:** {', '.join(meta.funders)}", existing_block), quote_line()]
-    if name in {"Supporting Materials", "Course Materials"}:
+    if name in {"Course Materials"}:
         if not meta.materials_url:
             return existing_block
         return [
