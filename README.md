@@ -69,14 +69,14 @@ Lesson overview
 >
 > <svg xmlns="http://www.w3.org/2000/svg" height="14" width="16" viewBox="0 0 576 512"><!--!Font Awesome Free 6.5.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2023 Fonticons, Inc.--><path d="M384 64c0-17.7 14.3-32 32-32H544c17.7 0 32 14.3 32 32s-14.3 32-32 32H448v96c0 17.7-14.3 32-32 32H320v96c0 17.7-14.3 32-32 32H192v96c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32h96V320c0-17.7 14.3-32 32-32h96V192c0-17.7 14.3-32 32-32h96V64z"/></svg> **Level:** Beginner
 >  
-> <i class="fa fa-arrow-left"></i> **Prerequisites**
+> <i class="fa fa-arrow-left"></i> **Prerequisites:**
 > To be able to follow this course, learners should have knowledge in:
 >
 > * Knowledge of Command line Interface is a plus
 >
 > If you lack command-line experience, you can prepare by following this [e-learning or Linux introduction](https://www.vibtrainingandconferences.be/events?f%5B0%5D=status%3Aupcoming&text=linux).
 >
-> <i class="fa fa-bookmark"></i>  **Description**
+> <i class="fa fa-bookmark"></i>  **Description:**
 > This hands-on course introduces the principles and practice of building scalable and reproducible data analysis pipelines using Nextflow. 
 >
 > <i class="fa fa-arrow-right"></i> **Learning Outcomes:**
@@ -91,13 +91,13 @@ Lesson overview
 > 1. [Exercises](./exercises/)
 > 2. [Presentation](#2)
 >
-> <i class="fa fa-hourglass"></i> **Time estimation**: 16 hours (2 days)
+> <i class="fa fa-hourglass"></i> **Time estimation:** 16 hours (2 days)
 >
 > <i class="fa fa-asterisk"></i> **Requirements:** The (technical) installation requirements are described in this [file](./docs/installations.md)
 >
 > <i class="fa fa-money-bill"></i> **Funders:** This project 
 >
-> <i class="fa fa-anchor"></i> **PURL**: [<img src="https://zenodo.org/badge/DOI/10.5281/zenodo.19021095.svg" width="200"/>](https://zenodo.org/records/19021095)
+> <i class="fa fa-anchor"></i> **PURL:** [<img src="https://zenodo.org/badge/DOI/10.5281/zenodo.19021095.svg" width="200"/>](https://zenodo.org/records/19021095)
 >
 > ## Proposed Schedule 
 >
