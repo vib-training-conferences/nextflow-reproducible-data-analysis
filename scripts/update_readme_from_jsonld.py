@@ -396,7 +396,7 @@ def field_name_from_line(line: str) -> str | None:
     # Normalize common variants.
     if name.lower() == "time estimation":
         return "Time estimation"
-
+    return name
 
 def split_overview_blocks(section: str) -> tuple[list[str], list[tuple[str | None, list[str]]]]:
     """Split the Lesson overview into its heading and field/content blocks."""
