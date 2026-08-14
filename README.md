@@ -65,7 +65,7 @@ courseURL: https://training.vib.be/all-trainings/nextflow-reproducible-and-autom
 Lesson overview
 ----------------
 
-<!-- COURSE_METADATA_START -->
+<!-- COURSE_METADATA_START --> ADDING A LINE FOR TESTING
 
 > <i class="fa fa-lock"></i> **License:** [Creative Commons Attribution 4.0 International  License](https://creativecommons.org/licenses/by/4.0/deed.en)
 >
