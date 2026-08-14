@@ -7,8 +7,6 @@ on:
         description: "Course page URL. Leave empty to detect a URL from README.md."
         required: false
         default: ""
-  schedule:
-    - cron: "0 6 * * 1"
   push:
     branches:
       - main
