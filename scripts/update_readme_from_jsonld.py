@@ -20,6 +20,7 @@ Typical use:
 from __future__ import annotations
 
 import argparse
+import copy
 import html
 import json
 import re
@@ -654,11 +655,17 @@ def update_readme(readme: str, meta: CourseMetadata, update_jsonld: bool = True)
     """Apply all README updates: title, lesson overview, and optional JSON-LD block."""
 
     existing_jsonld = parse_embedded_lia_jsonld(readme)
-    meta = merge_missing_from_existing(meta, existing_jsonld)
+
+    # Keep lesson-overview updates tied to values extracted from the remote JSON-LD.
+    # This prevents overwriting existing Markdown fields when the remote source has no match.
+    meta_for_overview = meta
     updated = update_title(readme, meta.name)
-    updated = merge_lesson_overview(updated, meta)
+    updated = merge_lesson_overview(updated, meta_for_overview)
+
     if update_jsonld:
-        merged_jsonld = merge_jsonld_objects(existing_jsonld, meta)
+        # Backfill only for the embedded @JSONLD output block.
+        meta_for_jsonld = merge_missing_from_existing(copy.deepcopy(meta), existing_jsonld)
+        merged_jsonld = merge_jsonld_objects(existing_jsonld, meta_for_jsonld)
         updated = replace_or_append_lia_jsonld(updated, merged_jsonld)
     return updated
 
