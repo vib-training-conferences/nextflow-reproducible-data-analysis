@@ -41,8 +41,7 @@ KNOWN_FIELDS = [
     "Description",
     "Learning Outcomes",
     "Time estimation",
-    "Funders",
-    "Course Materials"
+    "Funders"
 ]
 
 
@@ -519,8 +518,6 @@ def render_field(name: str, meta: CourseMetadata, existing_block: list[str] | No
         if not meta.funders:
             return existing_block
         return [decorate_field_line(f"**Funders:** {', '.join(meta.funders)}", existing_block), quote_line()]
-    if name == "Course Materials":
-        return [decorate_field_line("**Course Materials**:", existing_block)]
   
     return existing_block
 
