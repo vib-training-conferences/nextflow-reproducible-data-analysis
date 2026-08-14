@@ -76,7 +76,7 @@ Lesson overview
 > <i class="fa fa-arrow-left"></i> **Prerequisites**
 > To be able to follow this course, learners should have knowledge in:
 >
-> 1. Knowledge of Command line Interface is a plus
+> * Knowledge of Command line Interface is a plus
 >
 > If you lack command-line experience, you can prepare by following this [e-learning or Linux introduction](https://www.vibtrainingandconferences.be/events?f%5B0%5D=status%3Aupcoming&text=linux).
 >
