@@ -71,6 +71,7 @@ class CourseMetadata:
     language: str = ""
     duration: str = ""
     materials_url: str = ""
+    funders: list[str] = field(default_factory=list)
     authors: list[Person] = field(default_factory=list)
     contributors: list[Person] = field(default_factory=list)
 
@@ -347,6 +348,7 @@ def metadata_from_jsonld(objects: list[Any], source_url: str) -> CourseMetadata:
         language=first_text(course.get("inLanguage"), instance.get("inLanguage")),
         duration=first_text(course.get("duration"), course.get("timeRequired"), instance.get("duration")),
         materials_url=material,
+        funders=text_list(course.get("funder") or instance.get("funder") or course.get("sponsor") or instance.get("sponsor")),
         authors=person_list(course.get("author") or course.get("creator")),
         contributors=person_list(course.get("contributor")),
     )
@@ -394,6 +396,8 @@ def field_name_from_line(line: str) -> str | None:
     # Normalize common variants.
     if name.lower() == "time estimation":
         return "Time estimation"
+    if name.lower() in {"supporting materials", "course materials"}:
+        return "Course Materials"
     return name
 
 
@@ -514,11 +518,15 @@ def render_field(name: str, meta: CourseMetadata, existing_block: list[str] | No
         if not meta.duration:
             return existing_block
         return [decorate_field_line(f"**Time estimation**: {meta.duration}", existing_block), quote_line()]
-    if name == "Supporting Materials":
+    if name == "Funding":
+        if not meta.funders:
+            return existing_block
+        return [decorate_field_line(f"**Funding:** {', '.join(meta.funders)}", existing_block), quote_line()]
+    if name in {"Supporting Materials", "Course Materials"}:
         if not meta.materials_url:
             return existing_block
         return [
-            decorate_field_line("**Supporting Materials**:", existing_block),
+            decorate_field_line("**Course Materials**:", existing_block),
             quote_line(),
             quote_line(f"1. [Course materials]({meta.materials_url})"),
             quote_line(),
@@ -593,6 +601,7 @@ def merge_jsonld_objects(existing: dict[str, Any], meta: CourseMetadata) -> dict
         "competencyRequired": meta.prerequisites,
         "teaches": meta.teaches,
         "audience": ", ".join(meta.audience),
+        "funder": meta.funders,
         "inLanguage": meta.language,
         "learningResourceType": result.get("learningResourceType") or ["tutorial"],
         "author": [person_to_jsonld(p) for p in meta.authors] or result.get("author"),
@@ -645,6 +654,8 @@ def merge_missing_from_existing(meta: CourseMetadata, existing_jsonld: dict[str,
         meta.license_url = first_text(existing_jsonld.get("license"))
     if not meta.language:
         meta.language = first_text(existing_jsonld.get("inLanguage"))
+    if not meta.funders:
+        meta.funders = text_list(existing_jsonld.get("funder") or existing_jsonld.get("sponsor"))
     if not meta.authors:
         meta.authors = person_list(existing_jsonld.get("author"))
     if not meta.contributors:
