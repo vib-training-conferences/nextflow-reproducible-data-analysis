@@ -384,6 +384,7 @@ def field_name_from_line(line: str) -> str | None:
 
     cleaned = line.strip()
     cleaned = cleaned[1:].strip() if cleaned.startswith(">") else cleaned
+    cleaned = re.sub(r"^(?:<[^>]+>\s*)+", "", cleaned)
     match = re.match(r"\*\*([^*]+?)\*\*\s*:?:?", cleaned)
     if not match:
         return None
