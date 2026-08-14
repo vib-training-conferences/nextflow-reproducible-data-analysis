@@ -41,8 +41,7 @@ KNOWN_FIELDS = [
     "Description",
     "Learning Outcomes",
     "Time estimation",
-    "Funders",
-    "Course materials"
+    "Funders"
 ]
 
 
