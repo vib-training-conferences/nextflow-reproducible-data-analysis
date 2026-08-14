@@ -89,10 +89,10 @@ Lesson overview
 > 5. “Apply best practices for reproducibility and scalability in workflow design”
 > 6. “Debug and refactor a simple pipeline to improve clarity modularity and performance”
 >
-> **Course Materials**:
+> <i class="fa fa-envelope-open-text"></i> **Course Materials**:
 >
 > 1. [Exercises](./exercises/)
-> 2. [Presentations](link)
+> 2. [Presentations]([in the Lesson overview: Slides](#2))
 >
 > <i class="fa fa-hourglass"></i> **Time estimation**: 16 hours (2 days)
 >
