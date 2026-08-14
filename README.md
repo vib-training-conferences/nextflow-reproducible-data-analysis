@@ -76,8 +76,8 @@ Lesson overview
 >
 > If you lack command-line experience, you can prepare by following this [e-learning or Linux introduction](https://www.vibtrainingandconferences.be/events?f%5B0%5D=status%3Aupcoming&text=linux).
 >
-> <i class="fa fa-bookmark"></i>  **Description**
-> This hands-on course introduces the principles and practice of building scalable and reproducible data analysis pipelines using Nextflow. 
+> <i class="fa fa-bookmark"></i> **Description**
+> This hands-on course introduces the principles and practice of building scalable and reproducible data analysis pipelines using Nextflow. As bioinformatics data volumes increase and analyses become more complex, workflow management tools play a key role in ensuring reproducibility and efficiency. During the training, you will learn to develop and run pipelines on local machines, HPC clusters, and cloud platforms. Starting with the basics, the course guides you through creating a simple pipeline and enhancing it with Nextflow’s modern DSL2 syntax.
 >
 > <i class="fa fa-arrow-right"></i> **Learning Outcomes:**
 > By the end of the course, learners will be able to:
@@ -85,11 +85,9 @@ Lesson overview
 > 1. “Describe the core components of Nextflow (channels processes modules workflows)”
 > 2. “Explain their roles of each component in the pipeline development and reproducibility aspect”
 > 3. “Construct a basic Nextflow pipeline using DSL2 syntax and execute it on a local machine”
->
-> <i class="fa fa-envelope-open-text"></i> **Course Materials**:
->
-> 1. [Exercises](./exercises/)
-> 2. [Presentation](#2)
+> 4. “Modify configuration files to adapt pipeline parameters for different computing environments (local cluster cloud)”
+> 5. “Apply best practices for reproducibility and scalability in workflow design”
+> 6. “Debug and refactor a simple pipeline to improve clarity modularity and performance”
 >
 > <i class="fa fa-hourglass"></i> **Time estimation**: 16 hours (2 days)
 >
@@ -113,48 +111,8 @@ Lesson overview
 > * [VIB Technologies](https://www.vib.be/)
 > * [UZ Ghent](https://www.uzgent.be/)
 >
-> <i class="fa fa-money-bill"></i> **Funders:** This project 
+> <i class="fa fa-money-bill"></i> **Funders:** ELIXIR Belgium, Vlaams Supercomputer Centrum
 >
-> <i class="fa fa-anchor"></i> **PURL**: [<img src="https://zenodo.org/badge/DOI/10.5281/zenodo.19021095.svg" width="200"/>](https://zenodo.org/records/19021095)
->
-> ## Authors and Contributors
->
-> Authors
->
-> [<img src="https://raw.githubusercontent.com/vib-training-conferences/training_material_template/refs/heads/main/docs/images/ORCID-iD_icon_vector.svg" width="20"/>](https://orcid.org/0000-0003-0490-5969) Kobe Lavaerts
->
-> [<img src="https://raw.githubusercontent.com/vib-training-conferences/training_material_template/refs/heads/main/docs/images/ORCID-iD_icon_vector.svg" width="20"/>](https://orcid.org/0009-0003-5619-1555) Nicolas Vannieuwkerke
->
-> [<img src="https://raw.githubusercontent.com/vib-training-conferences/training_material_template/refs/heads/main/docs/images/ORCID-iD_icon_vector.svg" width="20"/>](https://orcid.org/0000-0002-3926-7293) Tuur Muyldermans
->
-> [<img src="https://raw.githubusercontent.com/vib-training-conferences/training_material_template/refs/heads/main/docs/images/ORCID-iD_icon_vector.svg" width="20"/>](https://orcid.org/0000-0003-2182-1249) Kris Davie
->
-> Contributors
->
->[<img src="https://raw.githubusercontent.com/vib-training-conferences/training_material_template/refs/heads/main/docs/images/ORCID-iD_icon_vector.svg" width="20"/>](https://orcid.org/0000-0002-2685-4130) Steff Taelman
->
->[<img src="https://raw.githubusercontent.com/vib-training-conferences/training_material_template/refs/heads/main/docs/images/ORCID-iD_icon_vector.svg" width="20"/>](https://orcid.org/0000-0001-5958-0669) Bruna Piereck
->
->[<img src="https://raw.githubusercontent.com/vib-training-conferences/training_material_template/refs/heads/main/docs/images/ORCID-iD_icon_vector.svg" width="20"/>](https://orcid.org/0000-0001-6691-4233) Alexander Botzki
->
-> ** We welcome contributors for these materials **
-> ## Citing this lesson
->
-> Please cite as:
->
->Lavaerts, K., Vannieuwkerke, N., Muyldermans, T., Davie, K.& Taelman, S. (2026, March 14). Nextflow for reproducible and automated data analysis. Zenodo. https://doi.org/10.5281/zenodo.19021095
->
-> ## Chapters List
->
->| Chapter | Title                                                   |
->| :---- | :------------------------------------------------         |
->| 0     | [Getting Ready](#get-ready-for-the-course)  |
->| 1     | [Building blocks](#building-blocks)  |
->| 2     | [Executing pipelines](#executing-pipelines)  |
->| 3     | [Creating first pipeline](#creating-our-first-pipeline)  |
->| 4     | [Configuration files](#configuration-files)  |
->| 5     | [Creating reports](#creating-reports)  |
->| 6     | [Project](#project)  |
 
 # Workshop and Material organization
 
@@ -2916,6 +2874,10 @@ There are a few things left that you can implement in your pipeline so others ca
         "@id": "https://orcid.org/0009-0003-5619-1555"
       }
     ]
-  }
+  },
+  "funder": [
+    "ELIXIR Belgium",
+    "Vlaams Supercomputer Centrum"
+  ]
 }
 ```
