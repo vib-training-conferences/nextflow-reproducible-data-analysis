@@ -89,7 +89,7 @@ Lesson overview
 > <i class="fa fa-envelope-open-text"></i> **Course Materials**:
 >
 > 1. [Exercises](./exercises/)
-> 2. [Presentations]([in the Lesson overview: Slides](#2))
+> 2. [Presentation](#2)
 >
 > <i class="fa fa-hourglass"></i> **Time estimation**: 16 hours (2 days)
 >
@@ -113,7 +113,7 @@ Lesson overview
 > * [VIB Technologies](https://www.vib.be/)
 > * [UZ Ghent](https://www.uzgent.be/)
 >
-> <i class="fa fa-money-bill"></i> **Funder:** This project 
+> <i class="fa fa-money-bill"></i> **Funders:** This project 
 >
 > <i class="fa fa-anchor"></i> **PURL**: [<img src="https://zenodo.org/badge/DOI/10.5281/zenodo.19021095.svg" width="200"/>](https://zenodo.org/records/19021095)
 >
