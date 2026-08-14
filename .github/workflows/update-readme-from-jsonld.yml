@@ -58,7 +58,17 @@ jobs:
       - name: Show README changes
         run: git diff -- README.md
 
+      - name: Detect README changes
+        id: detect_changes
+        run: |
+          if git diff --quiet -- README.md; then
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Create Pull Request for README changes
+        if: steps.detect_changes.outputs.has_changes == 'true'
         uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.PAT_TOKEN }}
@@ -69,6 +79,7 @@ jobs:
 
             - Source: `scripts/update_readme_from_jsonld.py`
             - Trigger: `${{ github.workflow }}`
+          base: main
           branch: chore/update-readme-from-jsonld-${{ github.run_id }}
           delete-branch: true
           add-paths: README.md
