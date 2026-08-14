@@ -41,7 +41,8 @@ KNOWN_FIELDS = [
     "Description",
     "Learning Outcomes",
     "Time estimation",
-    "Funders"
+    "Funders",
+    "Course materials"
 ]
 
 
@@ -372,7 +373,7 @@ def locate_lesson_overview(readme: str) -> tuple[int, int, str]:
         raise ValueError("Could not find a 'Lesson overview' section in the README.")
     start = start_match.start()
     # In the reference README, the Lesson overview ends before the first real course body H1.
-    end_match = re.search(r"(?m)^# Workshop and Material organization\s*$", readme[start_match.end() :])
+    end_match = re.search(r"(?m)^> <i class="fa fa-asterisk"></i> **Requirements:\s*$", readme[start_match.end() :])
     if end_match:
         end = start_match.end() + end_match.start()
     else:
