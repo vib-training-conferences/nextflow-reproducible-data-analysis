@@ -442,6 +442,24 @@ def render_list(items: list[str]) -> list[str]:
     return [quote_line(f"{i}. {item}") for i, item in enumerate(items, 1)]
 
 
+def decorate_field_line(text: str, existing_block: list[str]) -> str:
+    """Preserve any decorative prefix that appears before a known field label."""
+
+    if not existing_block:
+        return quote_line(text)
+
+    first_line = existing_block[0].strip()
+    first_line = first_line[1:].strip() if first_line.startswith(">") else first_line
+    match = re.match(r"(.*?)(\*\*[^*]+?\*\*\s*:?:?)", first_line)
+    if not match:
+        return quote_line(text)
+
+    prefix = match.group(1).rstrip()
+    if prefix:
+        return quote_line(f"{prefix} {text}")
+    return quote_line(text)
+
+
 def render_field(name: str, meta: CourseMetadata, existing_block: list[str] | None = None) -> list[str]:
     """Render one known overview field from metadata, or keep the existing block."""
 
@@ -451,20 +469,20 @@ def render_field(name: str, meta: CourseMetadata, existing_block: list[str] | No
         if not meta.license_url:
             return existing_block
         label = "Creative Commons Attribution 4.0 International License"
-        return [quote_line(f"**License:** [{label}]({meta.license_url})"), quote_line()]
+        return [decorate_field_line(f"**License:** [{label}]({meta.license_url})", existing_block), quote_line()]
     if name == "Target Audience":
         if not meta.audience:
             return existing_block
-        return [quote_line(f"**Target Audience:** {', '.join(meta.audience)}"), quote_line()]
+        return [decorate_field_line(f"**Target Audience:** {', '.join(meta.audience)}", existing_block), quote_line()]
     if name == "Level":
         if not meta.educational_level:
             return existing_block
-        return [quote_line(f"**Level:** {meta.educational_level}"), quote_line()]
+        return [decorate_field_line(f"**Level:** {meta.educational_level}", existing_block), quote_line()]
     if name == "Prerequisites":
         if not meta.prerequisites:
             return existing_block
         return [
-            quote_line("**Prerequisites**"),
+            decorate_field_line("**Prerequisites**", existing_block),
             quote_line("To be able to follow this course, learners should have knowledge in:"),
             quote_line(),
             *render_list(meta.prerequisites),
@@ -473,7 +491,7 @@ def render_field(name: str, meta: CourseMetadata, existing_block: list[str] | No
     if name == "Description":
         if not meta.description:
             return existing_block
-        lines = [quote_line("**Description**")]
+        lines = [decorate_field_line("**Description**", existing_block)]
         for paragraph in re.split(r"\n\s*\n|\n", meta.description):
             paragraph = paragraph.strip()
             if paragraph:
@@ -484,7 +502,7 @@ def render_field(name: str, meta: CourseMetadata, existing_block: list[str] | No
         if not meta.teaches:
             return existing_block
         return [
-            quote_line("**Learning Outcomes:**"),
+            decorate_field_line("**Learning Outcomes:**", existing_block),
             quote_line("By the end of the course, learners will be able to:"),
             quote_line(),
             *render_list(meta.teaches),
@@ -493,12 +511,12 @@ def render_field(name: str, meta: CourseMetadata, existing_block: list[str] | No
     if name == "Time estimation":
         if not meta.duration:
             return existing_block
-        return [quote_line(f"**Time estimation**: {meta.duration}"), quote_line()]
+        return [decorate_field_line(f"**Time estimation**: {meta.duration}", existing_block), quote_line()]
     if name == "Supporting Materials":
         if not meta.materials_url:
             return existing_block
         return [
-            quote_line("**Supporting Materials**:"),
+            decorate_field_line("**Supporting Materials**:", existing_block),
             quote_line(),
             quote_line(f"1. [Course materials]({meta.materials_url})"),
             quote_line(),
