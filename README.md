@@ -95,6 +95,10 @@ Lesson overview
 >
 > <i class="fa fa-asterisk"></i> **Requirements:** The (technical) installation requirements are described in this [file](./docs/installations.md)
 >
+> <i class="fa fa-money-bill"></i> **Funders:** This project 
+>
+> <i class="fa fa-anchor"></i> **PURL**: [<img src="https://zenodo.org/badge/DOI/10.5281/zenodo.19021095.svg" width="200"/>](https://zenodo.org/records/19021095)
+>
 > ## Proposed Schedule 
 >
 > |time | Day 1 | Time | Day 2 |
@@ -106,16 +110,6 @@ Lesson overview
 > |13h00 - 14h45 | Processes and Workflows| 13h30 - 15h00 | Config files, Reports |
 > |14h45 - 15h00 | Break | 15h00 - 15h15 | break |
 > |15h00 - 17h30 | Creating our first pipeline |15h30 - 17h00 | Project Challenge |
->
-> <i class="fa fa-life-ring"></i> **Acknowledgement**:
->
-> * [ELIXIR Belgium](https://www.elixir-belgium.org/)
-> * [VIB Technologies](https://www.vib.be/)
-> * [UZ Ghent](https://www.uzgent.be/)
->
-> <i class="fa fa-money-bill"></i> **Funders:** This project 
->
-> <i class="fa fa-anchor"></i> **PURL**: [<img src="https://zenodo.org/badge/DOI/10.5281/zenodo.19021095.svg" width="200"/>](https://zenodo.org/records/19021095)
 >
 > ## Authors and Contributors
 >
@@ -136,6 +130,12 @@ Lesson overview
 >[<img src="https://raw.githubusercontent.com/vib-training-conferences/training_material_template/refs/heads/main/docs/images/ORCID-iD_icon_vector.svg" width="20"/>](https://orcid.org/0000-0001-5958-0669) Bruna Piereck
 >
 >[<img src="https://raw.githubusercontent.com/vib-training-conferences/training_material_template/refs/heads/main/docs/images/ORCID-iD_icon_vector.svg" width="20"/>](https://orcid.org/0000-0001-6691-4233) Alexander Botzki
+>
+> <i class="fa fa-life-ring"></i> **Acknowledgement**:
+>
+> * [ELIXIR Belgium](https://www.elixir-belgium.org/)
+> * [VIB Technologies](https://www.vib.be/)
+> * [UZ Ghent](https://www.uzgent.be/)
 >
 > ** We welcome contributors for these materials **
 > ## Citing this lesson
