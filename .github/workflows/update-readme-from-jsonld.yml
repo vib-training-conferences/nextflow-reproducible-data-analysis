@@ -10,6 +10,8 @@ on:
   schedule:
     - cron: "0 6 * * 1"
   push:
+    branches:
+      - main
     paths:
       - "README.md"
       - "scripts/update_readme_from_jsonld.py"
