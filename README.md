@@ -62,7 +62,7 @@ courseURL: https://training.vib.be/all-trainings/nextflow-reproducible-and-autom
 
 <img src="./docs/img/nextflow/nextflow-logo.png" width="350" align="center"/>
 
-Lesson Overview 
+Lesson overview 
 ----------------
 
 <!-- COURSE_METADATA_START --> 
