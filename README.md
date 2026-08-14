@@ -63,7 +63,7 @@ courseURL: https://training.vib.be/all-trainings/nextflow-reproducible-and-autom
 
 Lesson overview 
 ----------------
-> i class="fa fa-lock"></i> **License:** [Creative Commons Attribution 4.0 International License](https://creativecommons.org/licenses/by/4.0/)
+> <i class="fa fa-lock"></i> **License:** [Creative Commons Attribution 4.0 International License](https://creativecommons.org/licenses/by/4.0/)
 >
 > <i class="fa fa-user"></i> **Target Audience:** Researchers
 >
@@ -76,10 +76,10 @@ Lesson overview
 >
 > If you lack command-line experience, you can prepare by following this [e-learning or Linux introduction](https://www.vibtrainingandconferences.be/events?f%5B0%5D=status%3Aupcoming&text=linux).
 >
->i class="fa fa-bookmark"></i>  **Description**
+> <i class="fa fa-bookmark"></i>  **Description**
 > This hands-on course introduces the principles and practice of building scalable and reproducible data analysis pipelines using Nextflow. As bioinformatics data volumes increase and analyses become more complex, workflow management tools play a key role in ensuring reproducibility and efficiency. During the training, you will learn to develop and run pipelines on local machines, HPC clusters, and cloud platforms. Starting with the basics, the course guides you through creating a simple pipeline and enhancing it with Nextflow’s modern DSL2 syntax.
 >
-><i class="fa fa-arrow-right"></i> **Learning Outcomes:**
+> <i class="fa fa-arrow-right"></i> **Learning Outcomes:**
 > By the end of the course, learners will be able to:
 >
 > 1. “Describe the core components of Nextflow (channels processes modules workflows)”
@@ -161,7 +161,6 @@ Lesson overview
 >| 4     | [Configuration files](#configuration-files)  |
 >| 5     | [Creating reports](#creating-reports)  |
 >| 6     | [Project](#project)  |
->>>>>>> parent of 0ba743d (Update PURL image with raw-gihub link for tag in image folder)
 
 # Workshop and Material organization
 
