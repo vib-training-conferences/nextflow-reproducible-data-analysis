@@ -33,16 +33,29 @@ from urllib.request import Request, urlopen
 
 COURSE_TYPES = {"course", "learningresource", "trainingmaterial", "event", "educationevent", "courseinstance"}
 INSTANCE_TYPES = {"courseinstance", "event", "educationevent"}
-KNOWN_FIELDS = [
+README_FIELDS = [
     "License",
     "Target Audience",
     "Level",
     "Prerequisites",
     "Description",
     "Learning Outcomes",
+    "Course Materials",
     "Time estimation",
-    "Funders"
+    "Requirements",
+    "Funders",
+    "PURL",
 ]
+
+# Only these README fields are overwritten from remote JSON-LD. All other
+# fields are recognized as field blocks but preserved exactly as they are.
+JSONLD_MAPPED_FIELDS = [
+    "Description",
+    "Learning Outcomes",
+    "Time estimation",
+    "Funders",
+]
+KNOWN_FIELDS = README_FIELDS
 
 
 @dataclass
@@ -393,9 +406,26 @@ def field_name_from_line(line: str) -> str | None:
         return None
     name = match.group(1).strip().rstrip(":")
     # Normalize common variants.
-    if name.lower() == "time estimation":
-        return "Time estimation"
-    return name
+    normalized = re.sub(r"\s+", " ", name).strip().lower()
+    aliases = {
+        "learning outcomes": "Learning Outcomes",
+        "learning outcome": "Learning Outcomes",
+        "description": "Description",
+        "time estimation": "Time estimation",
+        "time estimate": "Time estimation",
+        "duration": "Time estimation",
+        "funders": "Funders",
+        "funder": "Funders",
+        "course materials": "Course Materials",
+        "course material": "Course Materials",
+        "target audience": "Target Audience",
+        "requirements": "Requirements",
+        "prerequisites": "Prerequisites",
+        "license": "License",
+        "level": "Level",
+        "purl": "PURL",
+    }
+    return aliases.get(normalized, name)
 
 def split_overview_blocks(section: str) -> tuple[list[str], list[tuple[str | None, list[str]]]]:
     """Split the Lesson overview into its heading and field/content blocks."""
@@ -462,6 +492,37 @@ def decorate_field_line(text: str, existing_block: list[str]) -> str:
     return quote_line(text)
 
 
+def format_duration(value: str) -> str:
+    """Convert common ISO 8601 duration values into a readable README label."""
+
+    value = clean_text(value)
+    if not value:
+        return ""
+
+    match = re.fullmatch(
+        r"P(?:(?P<days>\d+(?:[.,]\d+)?)D)?(?:T(?:(?P<hours>\d+(?:[.,]\d+)?)H)?(?:(?P<minutes>\d+(?:[.,]\d+)?)M)?(?:(?P<seconds>\d+(?:[.,]\d+)?)S)?)?",
+        value,
+        flags=re.I,
+    )
+    if not match:
+        return value
+
+    labels = [("days", "day"), ("hours", "hour"), ("minutes", "minute"), ("seconds", "second")]
+    parts: list[str] = []
+    for key, singular in labels:
+        raw = match.group(key)
+        if not raw:
+            continue
+        number = float(raw.replace(",", "."))
+        if number.is_integer():
+            display = str(int(number))
+        else:
+            display = str(number).rstrip("0").rstrip(".")
+        unit = singular if number == 1 else singular + "s"
+        parts.append(f"{display} {unit}")
+    return " ".join(parts) if parts else value
+
+
 def render_field(name: str, meta: CourseMetadata, existing_block: list[str] | None = None) -> list[str]:
     """Render one known overview field from metadata, or keep the existing block."""
 
@@ -513,7 +574,7 @@ def render_field(name: str, meta: CourseMetadata, existing_block: list[str] | No
     if name == "Time estimation":
         if not meta.duration:
             return existing_block
-        return [decorate_field_line(f"**Time estimation**: {meta.duration}", existing_block), quote_line()]
+        return [decorate_field_line(f"**Time estimation**: {format_duration(meta.duration)}", existing_block), quote_line()]
     if name == "Funders":
         if not meta.funders:
             return existing_block
@@ -531,15 +592,16 @@ def merge_lesson_overview(readme: str, meta: CourseMetadata) -> str:
     seen: set[str] = set()
     merged_lines: list[str] = heading[:]
     for name, block in blocks:
-        if name in KNOWN_FIELDS:
+        if name in JSONLD_MAPPED_FIELDS:
             merged_lines.extend(render_field(name, meta, block))
             seen.add(name)
         else:
+            # Preserve non-mapped README metadata fields exactly as authored.
             merged_lines.extend(block)
 
     # Insert missing JSON-LD-backed fields before the first preserved subsection such as Proposed Schedule.
     missing_blocks: list[str] = []
-    for name in KNOWN_FIELDS:
+    for name in JSONLD_MAPPED_FIELDS:
         if name not in seen:
             rendered = render_field(name, meta, [])
             if rendered:
@@ -659,8 +721,7 @@ def update_readme(readme: str, meta: CourseMetadata, update_jsonld: bool = True)
     # Keep lesson-overview updates tied to values extracted from the remote JSON-LD.
     # This prevents overwriting existing Markdown fields when the remote source has no match.
     meta_for_overview = meta
-    updated = update_title(readme, meta.name)
-    updated = merge_lesson_overview(updated, meta_for_overview)
+    updated = merge_lesson_overview(readme, meta_for_overview)
 
     if update_jsonld:
         # Backfill only for the embedded @JSONLD output block.
