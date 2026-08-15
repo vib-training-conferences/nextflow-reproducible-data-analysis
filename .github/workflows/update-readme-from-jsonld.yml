@@ -7,13 +7,12 @@ on:
         description: "Course page URL. Leave empty to detect a URL from README.md."
         required: false
         default: ""
-  push:
+
+  pull_request:
+    types:
+      - closed
     branches:
       - main
-    paths:
-      - "README.md"
-      - "scripts/update_readme_from_jsonld.py"
-      - ".github/workflows/update-readme-from-jsonld.yml"
 
 permissions:
   contents: write
@@ -21,21 +20,33 @@ permissions:
 
 jobs:
   update-readme:
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      github.event.pull_request.merged == true
+
     runs-on: ubuntu-latest
+
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+
       - name: Update LiaScript README from course page
         env:
           COURSE_URL: ${{ github.event.inputs.course_url }}
         run: |
           set -euo pipefail
+
           if [ -n "${COURSE_URL:-}" ]; then
             python scripts/update_readme_from_jsonld.py \
               --url "$COURSE_URL" \
@@ -56,7 +67,8 @@ jobs:
           if-no-files-found: ignore
 
       - name: Show README changes
-        run: git diff -- README.md
+        run: |
+          git diff -- README.md
 
       - name: Detect README changes
         id: detect_changes
