@@ -2784,56 +2784,8 @@ There are a few things left that you can implement in your pipeline so others ca
 - Speed up the slow processes in your pipeline by allocating more cpus and memory to them.
 - Have nextflow create a report when you run the pipeline to see some cool stats.
 
-
-
-```json   @JSONLD
+```json @JSONLD 
 {
-  "@context": "https://schema.org/",
-  "@type": "LearningResource",
-  "@id": "https://elixir-europe-training.github.io/ELIXIR-TrP-TeSS/",
-  "http://purl.org/dc/terms/conformsTo": {
-    "@type": "CreativeWork",
-    "@id": "https://bioschemas.org/profiles/TrainingMaterial/1.0-RELEASE"
-  },
-  "description": "",
-  "keywords": "Nextflow, Workflow, Automated data analysis",
-  "name": "Nextflow for reproducible and automated data analysis",
-  "license": "https://creativecommons.org/licenses/by/4.0/",
-  "educationalLevel": "beginner",
-  "competencyRequired": "none",
-  "teaches": [
-    "Describe the core components of Nextflow (e.g., channels, processes, modules, workflows) and explain their roles in pipeline development",
-   "Construct a basic Nextflow pipeline using DSL2 syntax and execute it on a local machine",
-   "Modify configuration files to adapt pipeline parameters for different computing environments (e.g., local, cluster, cloud).",
-   "Apply best practices for reproducibility and scalability in workflow design.",
-    "Debug and refactor a simple pipeline to improve clarity, modularity, and performance."
-  ],
-  "audience": "researchers",
-  "inLanguage": "en-US",
-  "learningResourceType": [
-    "tutorial"
-  ],
-  "author": [
-    {
-      "@type": "Person",
-      "name": "Kobe Lavaerts"
-    },
-    {
-      "@type": "Person",
-      "name": "Nicolas Vannieuwkerke"
-    }
-  ],
-  "contributor": [
-    {
-      "@type": "Person",
-      "name": "Tuur Muyldermans"
-    }
-  ]
-}
-```
-
-```json
-@JSONLD {
   "@context": "https://schema.org/",
   "@type": "LearningResource",
   "@id": "https://github.com/vib-tcp/nextflow-workshop",
