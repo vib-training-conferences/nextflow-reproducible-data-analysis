@@ -699,7 +699,7 @@ process < name > {
 <div class="admonition admonition-info">
 <p class="admonition-title">Note</p>
 
-This is the legacy way of creating a process. We still give this in the course because most pipelines still use this way of defining their processes. The new way includes static typing and a record types. You can read more about this in the [docs](https://docs.seqera.io/nextflow/reference/process/inputs-outputs-typed).
+This is the legacy way of creating a process. We still give this in the course because most pipelines still use this way of defining their processes. The new way includes static typing and a record types. You can read more about this in the [docs](https://docs.seqera.io/nextflow/process-typed).
 
 </div>
 
@@ -1100,6 +1100,13 @@ workflow {
     process2(process1.out.output_ch)
 }
 ```
+
+<div class="admonition admonition-info">
+<p class="admonition-title">Note</p>
+
+Like processes, this is the legacy way of defining workflows. Read the [docs](https://docs.seqera.io/nextflow/workflow-typed) to find out more about the new way using static types.
+
+</div>
 
 ##### Workflow Outputs
 <div class="admonition admonition-info">
