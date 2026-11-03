@@ -696,6 +696,13 @@ process < name > {
 }
 ```
 
+<div class="admonition admonition-info">
+<p class="admonition-title">Note</p>
+
+This is the legacy way of creating a process. We still give this in the course because most pipelines still use this way of defining their processes. The new way includes static typing and a record types. You can read more about this in the [docs](https://docs.seqera.io/nextflow/reference/process/inputs-outputs-typed).
+
+</div>
+
 ##### Examples
 
 Here are a couple of example processes:
