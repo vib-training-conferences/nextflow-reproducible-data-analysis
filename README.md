@@ -1426,7 +1426,7 @@ There are more ways to set your pipeline parameters, for example in a `params.js
 
 <p class="admonition-title">Note</p>
 
-Typed parameters are one of the first stable features implemented in the process of introducing proper typing to Nextflow. Typed process and workflows are still in previeuw in the Nextflow 26.04, and not included in this course, but are intended to replace current processes and workflows at some point in the future
+Typed parameters are one of the first stable features implemented in the process of introducing proper typing to Nextflow. Typed process and workflows are stable since Nextflow 26.10.0, but are not included in this course. They are intended to replace current processes and workflows at some point in the future.
 
 </div>
 
