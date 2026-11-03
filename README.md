@@ -334,8 +334,6 @@ This tutorial aims to get you familiarized with Nextflow. After this course you 
 - Creating our first Nextflow script(s)
 - Managing configurations: parameters, portability, executors
 
-The course materials are focused on the newer version of Nextflow DSL2. This is the newest version of the Nextflow language and the *de-facto* standard for writing new pipelines in Nextflow. In fact, DSL1 is supposed to be fading out and chances are that the support for DSL1 will be gone within a near future. Must you have any questions regarding pipelines written in DSL1, feel free to ask any questions during the workshop.
-
 
 
 ## Building blocks
@@ -445,9 +443,9 @@ params {
     input: Path = '/path/to/input.tsv'
 }
 // use the input parameter as an input for the channel
-def input_ch = channel.fromPath(params.input)
+def input_ch = channel.of(params.input)
 ```
-Here `input: Path = '/path/to/input.tsv'` inside the params block `params {}` will create a parameter `input` and give it the value `'/path/to/input.tsv'` which is used as an input for the dataflow channel. We will later see that these parameters can then be overwritten on runtime.
+Here `input: Path = '/path/to/input.tsv'` inside the params block `params {}` will create a parameter `input` and give it the value `'/path/to/input.tsv'` which is used as an input for the dataflow channel. The type of the parameter is automatically set to `Path` which is used in Nextflow to define files. We will later see that these parameters can then be overwritten on runtime.
 </div>
 
 
@@ -697,6 +695,13 @@ process < name > {
    < user script to be executed >
 }
 ```
+
+<div class="admonition admonition-info">
+<p class="admonition-title">Note</p>
+
+This is the legacy way of creating a process. We still give this in the course because most pipelines still use this way of defining their processes. The new way includes static typing and a record types. You can read more about this in the [docs](https://docs.seqera.io/nextflow/process-typed).
+
+</div>
 
 ##### Examples
 
@@ -1096,6 +1101,13 @@ workflow {
 }
 ```
 
+<div class="admonition admonition-info">
+<p class="admonition-title">Note</p>
+
+Like processes, this is the legacy way of defining workflows. Read the [docs](https://docs.seqera.io/nextflow/workflow-typed) to find out more about the new way using static types.
+
+</div>
+
 ##### Workflow Outputs
 <div class="admonition admonition-info">
 <p class="admonition-title">Note</p>
@@ -1414,7 +1426,7 @@ There are more ways to set your pipeline parameters, for example in a `params.js
 
 <p class="admonition-title">Note</p>
 
-Typed parameters are one of the first stable features implemented in the process of introducing proper typing to Nextflow. Typed process and workflows are still in previeuw in the Nextflow 26.04, and not included in this course, but are intended to replace current processes and workflows at some point in the future
+Typed parameters are one of the first stable features implemented in the process of introducing proper typing to Nextflow. Typed process and workflows are stable since Nextflow 26.10.0, but are not included in this course. They are intended to replace current processes and workflows at some point in the future.
 
 </div>
 
@@ -1571,10 +1583,10 @@ The `reads`, `transcriptome` and `multiqc` parameters.
 
 **Solution 3**
 
-1. As of 22/04/2025: 150 pipelines are available, of which 91 are released, 46 are under development, and 13 are archived.
+1. As of 03/11/2026: 159 pipelines are available, of which 106 are released, 39 are under development, and 14 are archived.
 
 2. [link](https://nf-co.re/atacseq)
- - `2.1.2` (15/10/2024)
+ - `2.1.2` (03/11/2026)
  - 9 versions: current (2.1.2), 2.1.1, 2.1.0, 2.0, 1.2.2, 1.2.1, 1.2.0, 1.1.0, and 1.0.0.
  - Only one required parameter: `--input` (Path to comma-separated file containing information about the samples in the experiment)
  - 200 (parameter `--fragment_size`)
