@@ -1583,10 +1583,10 @@ The `reads`, `transcriptome` and `multiqc` parameters.
 
 **Solution 3**
 
-1. As of 22/04/2025: 150 pipelines are available, of which 91 are released, 46 are under development, and 13 are archived.
+1. As of 03/11/2026: 159 pipelines are available, of which 106 are released, 39 are under development, and 14 are archived.
 
 2. [link](https://nf-co.re/atacseq)
- - `2.1.2` (15/10/2024)
+ - `2.1.2` (03/11/2026)
  - 9 versions: current (2.1.2), 2.1.1, 2.1.0, 2.0, 1.2.2, 1.2.1, 1.2.0, 1.1.0, and 1.0.0.
  - Only one required parameter: `--input` (Path to comma-separated file containing information about the samples in the experiment)
  - 200 (parameter `--fragment_size`)
