@@ -443,9 +443,9 @@ params {
     input: Path = '/path/to/input.tsv'
 }
 // use the input parameter as an input for the channel
-def input_ch = channel.fromPath(params.input)
+def input_ch = channel.of(params.input)
 ```
-Here `input: Path = '/path/to/input.tsv'` inside the params block `params {}` will create a parameter `input` and give it the value `'/path/to/input.tsv'` which is used as an input for the dataflow channel. We will later see that these parameters can then be overwritten on runtime.
+Here `input: Path = '/path/to/input.tsv'` inside the params block `params {}` will create a parameter `input` and give it the value `'/path/to/input.tsv'` which is used as an input for the dataflow channel. The type of the parameter is automatically set to `Path` which is used in Nextflow to define files. We will later see that these parameters can then be overwritten on runtime.
 </div>
 
 
