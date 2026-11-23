@@ -59,7 +59,7 @@ courseURL: https://training.vib.be/all-trainings/nextflow-reproducible-and-autom
 
 # Nextflow for reproducible and automated data analysis
 
-<img src="./docs/img/nextflow/nextflow-logo.png" width="350" align="center"/>
+<img src="./docs/images/nextflow/nextflow-logo.png" width="350" align="center"/>
 
 Lesson overview 
 ----------------
@@ -322,7 +322,7 @@ Contributors: Finn Bacall, Aitor Apaolaza, Munazah Andrabi, Chris Child, Carole 
 
 Technical Editors: Alexander Botzki
 
-License: [![CC BY](docs/img/picture003.jpg)](http://creativecommons.org/licenses/by/4.0/)
+License: [![CC BY](docs/images/picture003.jpg)](http://creativecommons.org/licenses/by/4.0/)
 
 
 # Nextflow
@@ -376,7 +376,7 @@ In response to that, workflow managers such as Nextflow were built, aimed to dea
 
 By definition, Nextflow is a reactive workflow framework and a programming Domain Specific Language that eases the writing of data-intensive computational pipelines[[1](https://www.nextflow.io/)]. Nextflow scripting is an extension of the Groovy programming language, which in turn is a super-set of the Java programming language. Groovy can be considered as Python for Java in a way that simplifies the writing of code and is more approachable.
 
-![](docs/img/nextflow/java-groovy-nextflow.png)
+![](docs/images/nextflow/java-groovy-nextflow.png)
 
 ### Why (not)?
 Nextflow is not the only player in the field[[2](https://github.com/pditommaso/awesome-pipeline/)], however there are good reasons to opt for it.
@@ -399,7 +399,7 @@ Nextflow consists of four main components: channels, operators, processes and wo
 - *Operators*: **rearrange** the content of channels by applying functions or transformations.
 - *Workflows*: **compose** the logic of the pipeline by combining processes, channels and operators.
 
-![](docs/img/nextflow/nextflow-conceptually.png)
+![](docs/images/nextflow/nextflow-conceptually.png)
 
 The script [`exercises/01_building_blocks/firstscript.nf`](https://github.com/vibbits/nextflow-workshop/blob/main/exercises/01_building_blocks/firstscript.nf) is using these three components and gives an idea of how Nextflow scripts are being build.
 
@@ -983,7 +983,7 @@ Nextflow also contains an `exec` block. This will not be discussed in this cours
 Each process is executed independently and isolated from any other process. They communicate via asynchronous FIFO queues, i.e. one process will wait for a full set of inputs to be ready before it starts executing. This means that a process that depends on the output of another process will wait until that process is finished. The following figure illustrates this concept:
 
 
-![](docs/img/nextflow/asynchronous-FIFO.png)
+![](docs/images/nextflow/asynchronous-FIFO.png)
 
 
 Let's exemplify this by running the script [`exercises/01_building_blocks/fifo.nf`](https://github.com/vibbits/nextflow-workshop/blob/main/exercises/01_building_blocks/fifo.nf) and inspect the order that the channels are being processed.
@@ -1606,7 +1606,7 @@ The `reads`, `transcriptome` and `multiqc` parameters.
 In this chapter we will build a basic RNA-seq pipeline consisting of quality controls, trimming of reads and mapping to a reference genome (excl. counting). We will build the pipeline step by step, starting from quality control with FastQC. The figure below was generated with Nextflow and represents the processes that we will build and the overview of the dataflow from the beginning to the end of the workflow.
 
 
-![](docs/img/nextflow/RNAseq.PNG)
+![](docs/images/nextflow/RNAseq.PNG)
 
 
 ### Quality control with `FastQC`
@@ -1836,7 +1836,7 @@ Until now, we have written the processes and the workflow in the same file. Howe
 The figure below gives an overview of how the structure could look like. On the left we have the main Nextflow script (`main.nf`) that defines the parameters, channels and the workflow. It imports the processes from the modules, in this case available in a folder `modules/`. The configuration file `nextflow.config` will be further discussed in the next chapter.
 
 
-![](docs/img/nextflow/overview-folder-structure.png)
+![](docs/images/nextflow/overview-folder-structure.png)
 
 A module is generally imported with
 
@@ -2194,7 +2194,7 @@ Pipeline configuration properties are defined in a file named `nextflow.config` 
 
 Let's have a look again at the structure of the workflow. The `nextflow.config` defines the technical and pipeline parameters and are used to configure the `main.nf` script. Actually, we can write any number of `*.config` files and include them in the general `nextflow.config` which is then used as default configuration for the `main.nf`.
 
-![](docs/img/nextflow/overview-folder-structure.png)
+![](docs/images/nextflow/overview-folder-structure.png)
 
 ### Technical parameters
 
@@ -2237,7 +2237,7 @@ The nf-core community (more on the community later) has a list of ready-to-use i
 
 Here is an overview of supported executors:
 
-![](docs/img/nextflow/executors-schedulers.png)
+![](docs/images/nextflow/executors-schedulers.png)
 
 
 #### Portability
@@ -2758,7 +2758,7 @@ Combine the FastQC and MultiQC processes into a named workflow. Use aliases to i
 
 To closely examine amplicon sequencing data and to extract the unique 16S sequence variants from these, there is an incredibly useful package in R called DADA2. You have been provided with a small R script (`reads2counts.r`) which uses this package to count the abundance of each unique sequence in each sample. Based on these abundances, the script can compare samples to each other and can construct a distance tree (also known as a dendrogram):
 
-![enter image dendrogram](docs/img/nextflow/dendrogram.png) 
+![enter image dendrogram](docs/images/nextflow/dendrogram.png) 
 
 The script takes the preprocessed forward & reverse reads (in no specific order) as input arguments on the command line.
 
