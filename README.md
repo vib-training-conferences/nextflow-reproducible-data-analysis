@@ -172,78 +172,43 @@ Please read this page carefully **before** the start of the workshop.
 
 There are two options for following this workshop:
 
-  1. do the installations yourself & be in control of everything,
-  2. use the setup that we have provided with the installations already done.
+  1. Do the installations yourself & be in control of everything,
+  2. Use the setup that we have provided with the installations already done.
 
 In the former case, you will have to download [Nextflow](https://www.nextflow.io/docs/stable/getstarted.html) and [Apptainer](https://apptainer.org/). In the latter case, you can follow the instructions below.
 
 ### Provided infrastructure
 
-We will be using the Gent section of the [Flemish Supercomputing Center](https://www.vscentrum.be/), you should have already recieved instructions for creating an account. Specifically, we will be using the [Interactive and Debug](https://docs.hpc.ugent.be/Linux/interactive_debug/) cluster. The cluster is already equipped with the latest version of Nextflow, and Apptainer.
+We will be using the Open OnDemand of the [VIB Data Core Compute](https://compute.vib.be/) cluster, for which you should have already received an email on your created account. The cluster is already equipped with the latest version of Nextflow, and Apptainer.
 
-To connect to the cluster, there are two options. For the first option, there is no local setup needed, we will use the Web Interface to access the Gent VSC.
+To connect to the cluster, there are two options. For the first option, there is no local setup needed, we will use the Web Interface to access the cluster.
 
 #### Option 1: Web Interface
 
-This utilizes the OnDemand infrastructure at the VSC to launch a web-based version of VSCode for us. Using this, we don't need to make any connections to the clutser other than through the browser.
+This utilizes the Open OnDemand infrastructure at the Data Core to launch a web-based version of VS Code for us. Using this, we don't need to make any connections to the cluster other than through the browser.
 
-_If you normally use VSCode locally, this setup is completely seperate and won't have your usual extensions etc._
+_If you normally use VS Code locally, this setup is completely separate and won't have your usual extensions etc._
 
-- Navigate to [https://login.hpc.ugent.be/](https://login.hpc.ugent.be/) and login with your credentials.
-- Select "Interactive Apps" from the top bar -> "Code Server"
+- Navigate to [https://compute.vib.be/](https://compute.vib.be/) and login with your VIB credentials.
+- Select "Interactive Apps" from the top bar -> "VS Code"
 - Fill in the following settings:
 
-  - Cluster: `donphan (interactive/debug)`
-  - Time: 12 (hours)
+  - Partition: `debug_28C_56T_750GB`
+  - Walltime (hours): 8
   - Nodes: 1
-  - Cores: 8
-  - Select Path -> /data/... (on the left)
+  - Threads: 2
+  - Memory (GB): 4
   - Click "Launch"!
 - Wait for your job to start -> "Connect to VS Code"
 
-This runs fully in your browser and will continue to run even when your laptop is off etc. Your job will automatically end after 12 hours. **Make sure to save your work.**
+This runs fully in your browser and will continue to run even when your laptop is off etc. Your job will automatically end after your selected walltime. **Make sure to save your work.**
 
 #### Option 2: Local Installation
 
-We will be using an SSH connection in VSCode which we can create by following these instructions:
+We will be using a VS Code tunnel to use our local VS Code:
 
 - Download Visual Studio Code ([link](https://code.visualstudio.com/download))
-- Add the following extensions for a seamless integration of Nextflow and the VM in VScode:
-
-  - In VSCode, navigate to the 'Extensions' tab, search for the SSH remote package and install it:
-  - 'Remote - SSH' (ms-vscode-remote.remote-ssh).
-- Modify your local `.ssh/config` file to add the configuration for the cluster - If you already connect to the Gent VSC with this machine, you don't need to do this
-
-  - `Ctrl-Shift-P` will bring up the "command palette"
-  - Type `ssh config` and select the option to modify the configuration file (select the first file)
-  - Add the following code to your config file:
-```
-Host login-gent
-    User vscXXXXX # Replace Xs with your VSC ID
-    HostName login.hpc.ugent.be
-    IdentityFile ~/.ssh/id_rsa # This should be replaced with the path to your private key ( windows users might look like this: C:\Users\KrisDavie\Documents\VSC\vsc_id_rsa)
-
-```
-- Start a terminal in VSCode (select Terminal and then New Terminal)
-- Connect to the cluster with the following command: `ssh login-gent`
-- Optional: Start `screen` or `tmux` and do the following in the new terminal - This will keep your session alive even when you disconnect from the cluster
-- Load the modules for connecting to the interactive cluster: `module swap cluster/donphan`
-- Start a job using qsub: `qsub -I -l walltime=08:00:00,nodes=1:ppn=8`
-- Note the node you are connected to (e.g. `node4006.donphan.os`)
-- Add the following code to your config file:
-```
-Host node4006
-    User vscXXXXX # Replace Xs with your VSC ID
-    HostName node4006.donphan.os
-    ProxyCommand ssh login-gent -W %h:%p
-    # On windows you should use
-    # ProxyCommand C:\Windows\System32\OpenSSH\ssh.exe login-gent -W %h:%p
-    IdentityFile ~/.ssh/id_rsa # This should be replaced with the path to your private key ( windows users might look like this: C:\Users\KrisDavie\Documents\VSC\vsc_id_rsa)
-
-```
-- Finally you can open a this host in VSCode by typing `Ctrl-Shift-P` and selecting `Remote-SSH: Connect to Host...` and selecting the host you just added.
-
-  - If you didn't run qsub in a screen or tmux session, you will need to use an entire new VSCode window to connect to the host, otherwise when VSCode refreshes, the original connection will be lost and the job will end.
+- Follow [Data Core's instructions](https://docs.datacore.vib.be/compute-cluster/entrypoints/open-on-demand/vs-code-tunnel) on how to create a VS Code tunnel with Open OnDemand and access it with your local VS Code.
 
 #### Option 3: Custom Installation
 
@@ -251,28 +216,25 @@ You are free to connect to the cluster however you want, but the above 2 methods
 
 ### Common Setup
 
-- Install the Nextflow VSCcode Extension - This will give you syntax highlighting and linting for Nextflow
+- Install the Nextflow VS Code Extension - This will give you syntax highlighting and linting for Nextflow
 
   1. Go to extensions (CTRL+SHIFT+X)
   2. Search for "Nextflow"
   3. Install the Nextflow extension
-  4. Click on the cogwheel ("Manage") and open the "Extension Settings"
-  5. Scroll down to the `Nextflow > Java: Home` section and click on "Edit in settings.json"
-  6. Change the `nextflow.java.home` setting to `"/apps/gent/RHEL8/cascadelake-ib/software/Java/21.0.2"`
-  7. Open the command prompt (CTRL+SHIFT+P) and type `Nextflow: Restart language server` and press enter
 
 - Open a new terminal within VSCode: Terminal -> New Terminal
-- Create a new folder for the workshop
-- Clone this repository into the folder: `git clone https://github.com/vibbits/nextflow-workshop.git`
-- For the Gent cluster usage, in any terminal where you want to run your excercises 
+- Get the name of your course directory from your trainers and open your provisioned folder: `cd /data/training/<your_course>/${USER}`
+- Clone this repository into the folder: `git clone https://github.com/vib-training-conferences/nextflow-reproducible-data-analysis.git`
+- For the Data Core Compute cluster usage, in any terminal where you want to run your exercises 
 
-  1. Load the nextflow module: `module load Nextflow/26.04.3`
-  2. Export the following envrionment variables - these are required so that your home folder is not filled when building and storing apptainer images
-   - `export APPTAINER_CACHEDIR=${VSC_SCRATCH}/.apptainer_cache`
-   - `export APPTAINER_TMPDIR=${VSC_SCRATCH}/.apptainer_tmp`
-  3. If these tmp folders don't exist yet in your scratch folder, you will have to create them first
-   - `mkdir ${VSC_SCRATCH}/.apptainer_cache`
-   - `mkdir ${VSC_SCRATCH}/.apptainer_tmp`
+  1. Purge loaded modules: `module purge`
+  2. Load the Nextflow module: `module load Nextflow/26.04.0`
+  3. Export the following environment variables - they are required so that your home folder is not filled when building and storing apptainer images:
+   ```
+   cd /data/training/<your_course>/${USER}
+   export APPTAINER_CACHEDIR="${PWD}/.apptainer_cachedir"
+   export NXF_APPTAINER_CACHEDIR="${PWD}/.apptainer_cachedir"
+   ```
 
 ## Citing this lesson
 
@@ -1496,12 +1458,7 @@ After importing our pipeline of interest, we can run it on the command-line usin
 
 When you use `nextflow run` without pulling the pipeline first (`nextflow pull`), Nextflow will check GitHub for a corresponding repository, if one exists it will pull it and run it locally.
 
-`nextflow run nextflow-io/rnaseq-nf` will result in an error due to uninstalled tools on our system. To fix this, simply add the parameter `-with-apptainer`. We will discover what is happening when we enable this setting later. On the Gent VSC system, apptainer containers can only be run from certain locations, therefore you'll need to also set the cache directory to be used, we can do this with a config (covered later) or using some runtime environment variables `APPTAINER_CACHEDIR` and `NXF_APPTAINER_CACHEDIR`, these should be set to `$VSC_SCRATCH`. Your final command should look something like this:
-
-```bash
-APPTAINER_CACHEDIR=$VSC_SCRATCH/.apptainer_cache NXF_APPTAINER_CACHEDIR=$VSC_SCRATCH/.apptainer_cache nextflow run nextflow-io/rnaseq-nf -with-apptainer
-
-```
+`nextflow run nextflow-io/rnaseq-nf` will result in an error due to uninstalled tools on our system. To fix this, simply add the parameter `-with-apptainer`. We will discover what is happening when we enable this setting later. Apptainer will automatically use your `$HOME` to build and store images. Since storage in your `$HOME` is limited, you'll need to set the cache directory to be used. We can do this with a config (covered later) or using the runtime environment variables we set before `APPTAINER_CACHEDIR` and `NXF_APPTAINER_CACHEDIR`, which should point to your selected directory.
 </div>
 
 
@@ -1526,14 +1483,14 @@ Note that this workflow uses the recently introduced workflow outputs to save ou
 The directory with the final results:
 
 ```bash
-APPTAINER_CACHEDIR=$VSC_SCRATCH/.apptainer_cache NXF_APPTAINER_CACHEDIR=$VSC_SCRATCH/.apptainer_cache nextflow run nextflow-io/rnaseq-nf -output-dir 'myAwesomeResults' -with-apptainer
+nextflow run nextflow-io/rnaseq-nf -output-dir 'myAwesomeResults' -with-apptainer
 
 ```
 
 or, the directory with temporary files (used for caching):
 
 ```bash
-APPTAINER_CACHEDIR=$VSC_SCRATCH/.apptainer_cache NXF_APPTAINER_CACHEDIR=$VSC_SCRATCH/.apptainer_cache nextflow run nextflow-io/rnaseq-nf -w 'myAwesomeResults' -with-apptainer
+nextflow run nextflow-io/rnaseq-nf -w 'myAwesomeResults' -with-apptainer
 
 ```
 
@@ -2437,7 +2394,7 @@ Other configuration files can be included in the `nextflow.config` file using th
 includeConfig "path/to/other.config"
 ```
 
-This even works for configs hosted online (e.g. on Github) by using the full link. This example show how to import the nf-core institutional configuration file for the VSC Ghent HPC.
+This even works for configs hosted online (e.g. on Github) by using the full link. This example shows how to import one of the nf-core institutional configuration files (here the one for the VSC Ghent HPC).
 
 ```groovy
 includeConfig "https://github.com/nf-core/configs/raw/refs/heads/master/conf/vsc_ugent.config"
