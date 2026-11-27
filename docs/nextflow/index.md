@@ -32,5 +32,5 @@ Here are some great tips for learning and to get inspired for writing your own p
 - Curated ready-to-use analysis pipelines by NF-core ([link](https://nf-co.re/))
 - Model example pipeline on Variant Calling Analysis with NGS RNA-Seq data developed by CRG ([link](https://github.com/CRG-CNAG/CalliNGS-NF))
 - Tutorial by Andrew Severin ([link](https://bioinformaticsworkbook.org/dataAnalysis/nextflow/02_creatingAworkflow.html#gsc.tab=0))
-- Nextflow community basic training ([link](https://training.nextflow.io/basic_training/))
+- Nextflow community basic training ([link](https://training.nextflow.io/latest/))
 

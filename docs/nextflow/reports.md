@@ -36,7 +36,7 @@ Nextflow has an embedded function for reporting a various information about the 
 
 4. **Seqera Platform**
 
-    Adding the parameter `-with-tower` enables the Seqera Platform service and will output the reports to a browser-based platform. More about Seqera Platform [here](https://training.nextflow.io/basic_training/seqera_platform/)
+    Adding the parameter `-with-tower` enables the Seqera Platform service and will output the reports to a browser-based platform. More about Seqera Platform [here](https://seqera.io/platform/)
 
 ---
 
