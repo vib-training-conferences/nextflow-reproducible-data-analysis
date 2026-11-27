@@ -92,7 +92,7 @@ Lesson overview
 > <i class="fa fa-envelope-open-text"></i> **Course Materials**:
 >
 > 1. [Exercises](./exercises/)
-> 2. [Presentation](#2)
+> 2. [Presentation](https://docs.google.com/presentation/d/1Zmv3T0Af4b79PbOTB2mS-NW8z99fI4Ue/edit?slide=id.p1#slide=id.p1)
 >
 > <i class="fa fa-hourglass"></i> **Time estimation**: 16 hours
 >
