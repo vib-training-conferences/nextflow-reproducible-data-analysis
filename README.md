@@ -18,7 +18,7 @@ script:   https://cdn.jsdelivr.net/chartist.js/latest/chartist.min.js
 
 link:     https://cdn.jsdelivr.net/chartist.js/latest/chartist.min.css
 link:     https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css
-link:     https://raw.githubusercontent.com/vibbits/material-liascript/master/img/org.css
+link:     https://raw.githubusercontent.com/vib-training-conferences/material-liascript/master/img/liascript_img/org.css
 link:     https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css
 link:     https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@300&display=swap
 link:     https://fonts.googleapis.com/css2?family=Open+Sans&display=swap
@@ -92,7 +92,7 @@ Lesson overview
 > <i class="fa fa-envelope-open-text"></i> **Course Materials**:
 >
 > 1. [Exercises](./exercises/)
-> 2. [Presentation](#2)
+> 2. [Presentation](https://docs.google.com/presentation/d/1Zmv3T0Af4b79PbOTB2mS-NW8z99fI4Ue/edit?slide=id.p1#slide=id.p1)
 >
 > <i class="fa fa-hourglass"></i> **Time estimation**: 16 hours
 >
@@ -1195,7 +1195,7 @@ Given the file `input.csv` (in the exercises folder) with the following content:
 
 **Solution ext 2**
 
-Find the solution also in [`exercises/01_building_blocks/solutions/ex.2_split-csv.nf`](https://github.com/nextflow-io/nextflow/blob/main/exercises/01_building_blocks/solutions/ex.2_split-csv.nf). Inspect the command that has ran in the intermediate `work/` directory following the hashed folders and look in the file `.command.sh`.
+Find the solution also in [`exercises/01_building_blocks/solutions/ex.2_split-csv.nf`](https://github.com/vib-training-conferences/nextflow-reproducible-data-analysis/blob/main/exercises/01_building_blocks/solutions/ex.2_split-csv.nf). Inspect the command that has ran in the intermediate `work/` directory following the hashed folders and look in the file `.command.sh`.
 
 ```groovy
 #!/usr/bin/env nextflow
@@ -1547,7 +1547,7 @@ The `reads`, `transcriptome` and `multiqc` parameters.
  - 9 versions: current (2.1.2), 2.1.1, 2.1.0, 2.0, 1.2.2, 1.2.1, 1.2.0, 1.1.0, and 1.0.0.
  - Only one required parameter: `--input` (Path to comma-separated file containing information about the samples in the experiment)
  - 200 (parameter `--fragment_size`)
- - If `-profile` is not specified, the pipeline will run locally and expect all software to be installed and available on the PATH. More information is available [here](https://nf-co.re/atacseq/1.2.2/usage#main-arguments).
+ - If `-profile` is not specified, the pipeline will run locally and expect all software to be installed and available on the PATH. More information is available [here](https://nf-co.re/atacseq/1.2.2/docs/usage#main-arguments).
 
 3. [link](https://github.com/crickbabs/BABS-aDNASeq).
  - `samtools mpileup`
@@ -2548,7 +2548,7 @@ export NXF_VER=24.10.5
 
 Verify the Nextflow version (NXF_VER) with `nextflow -v`. The access token can be obtained from clicking on the top-right profile icon, select *Your tokens* and create *New token*.
 
-Tower is undergoing a lot of changes, hence we refer to this [training material](https://training.nextflow.io/basic_training/seqera_platform/) for up to date information. More information is also available at [seqera.io](https://seqera.io/).
+Tower is undergoing a lot of changes, hence we refer to this [training material](https://training.nextflow.io/latest/seqera_scale/) for up to date information. More information is also available at [seqera.io](https://seqera.io/).
 
 ---
 

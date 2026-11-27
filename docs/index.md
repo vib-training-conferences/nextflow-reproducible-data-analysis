@@ -15,7 +15,7 @@ This is the third edition of this workshop, jointly organised by the VIB Bioinfo
 
 This website contains the course materials and outline for the second session.
 
-The presentation which goes alongside this material can be found [here](https://docs.google.com/presentation/d/1dl7yuVZTKeOKJwXuwTLb1NGWSZKKT0-THyllVtXMFsg/edit?usp=sharing).
+The presentation which goes alongside this material can be found [here](https://docs.google.com/presentation/d/1Zmv3T0Af4b79PbOTB2mS-NW8z99fI4Ue/edit?slide=id.p1#slide=id.p1).
 The presentation shared by nf-core in thier participation can be found [here](https://docs.google.com/presentation/d/1FWtdUfHkPtq6NoM2tMTLD6uMmDveUtbq2FL4v_o2RtM/edit#slide=id.p)
 
 ## Practical information
